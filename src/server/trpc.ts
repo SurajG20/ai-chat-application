@@ -1,10 +1,7 @@
 import { initTRPC } from '@trpc/server';
-import { z } from 'zod';
 
 // Create context type
-export interface Context {
-  // Add any context properties here (user, db, etc.)
-}
+export type Context = Record<string, never>;
 
 // Create tRPC instance
 const t = initTRPC.context<Context>().create();
