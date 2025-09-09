@@ -1,10 +1,10 @@
 import { router } from './trpc';
 import { usersRouter } from './routers/users';
-import { postsRouter } from './routers/posts';
+import { chatRouter } from './routers/chat';
 
 export const appRouter = router({
   users: usersRouter,
-  posts: postsRouter,
+  chat: chatRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { router, publicProcedure } from '../trpc';
 import { db } from '../../db';
-import { users, posts } from '../../db/schema';
+import { users } from '../../db/schema';
 import { eq } from 'drizzle-orm';
 
 export const usersRouter = router({
@@ -52,12 +52,5 @@ export const usersRouter = router({
       return { success: true };
     }),
 
-  getPosts: publicProcedure
-    .input(z.object({ userId: z.number() }))
-    .query(async ({ input }) => {
-      return await db
-        .select()
-        .from(posts)
-        .where(eq(posts.authorId, input.userId));
-    }),
+  // getPosts removed - posts functionality not needed for career counseling chat
 });
