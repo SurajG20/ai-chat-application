@@ -1,32 +1,54 @@
-import { UserList } from '../components/user-list';
-import { PostList } from '../components/post-list';
+'use client';
+
+import { useSession } from 'next-auth/react';
+import { ChatInterface } from '../components/chat-interface';
+import { AuthButton } from '../components/auth-button';
+import { ThemeToggle } from '../components/theme-toggle';
 
 export default function Home() {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto py-8">
-        <header className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Full Stack Next.js App
-          </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Built with Next.js 15, TypeScript, tRPC, TanStack Query, PostgreSQL, and Drizzle ORM
-          </p>
-        </header>
+  const { data: session, status } = useSession();
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+  return (
+    <div className="min-h-screen">
+      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+        <div className="flex items-center justify-between">
           <div>
-            <UserList />
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Career Counseling Chat
+            </h1>
+            <p className="text-gray-600 dark:text-gray-300">
+              Get personalized career advice from our AI counselor
+            </p>
           </div>
-          <div>
-            <PostList />
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+            <AuthButton />
           </div>
         </div>
-
-        <footer className="mt-16 text-center text-gray-500">
-          <p>Full Stack Demo - Next.js + tRPC + TanStack Query + PostgreSQL + Drizzle</p>
-        </footer>
-      </div>
+      </header>
+      
+      {status === 'loading' ? (
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center">
+            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-300">Loading...</p>
+          </div>
+        </div>
+      ) : session ? (
+        <ChatInterface userId={parseInt((session.user as { id?: string })?.id || '0')} />
+      ) : (
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+              Welcome to Career Counseling Chat
+            </h2>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
+              Please sign in to start chatting with our AI career counselor
+            </p>
+            <AuthButton />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
