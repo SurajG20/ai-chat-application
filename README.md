@@ -19,7 +19,10 @@ A modern full-stack career counseling chat application built with the latest tec
 - ✅ Chat session management with history
 - ✅ Message persistence and threading
 - ✅ Responsive design for mobile and desktop
-- ✅ User authentication with NextAuth.js
+- ✅ User authentication with NextAuth.js (email/password)
+- ✅ User registration and login system
+- ✅ Secure password hashing with bcrypt
+- ✅ Modern shadcn/ui authentication interface
 - ✅ Real-time typing indicators
 - ✅ Dark/light theme toggle
 
@@ -85,16 +88,14 @@ pnpm db:push
 pnpm dev
 ```
 
-5. Create a demo user (optional):
-```bash
-pnpm create-demo-user
-```
-
-6. Open [http://localhost:3000](http://localhost:3000) in your browser.
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Usage
 
-1. **Sign In**: Use the sign-in page to authenticate with demo credentials
+1. **Authentication**: 
+   - **Landing Page**: Visit `/auth` to choose between sign in or sign up
+   - **Sign Up**: Create a new account with email and password at `/auth/signup`
+   - **Sign In**: Use your email and password to authenticate at `/auth/signin`
 2. **Start Chatting**: Create a new chat session and start asking career-related questions
 3. **View History**: Access your previous chat sessions from the sidebar
 4. **Theme Toggle**: Switch between light and dark themes using the toggle button
@@ -113,6 +114,40 @@ The app will automatically use Groq's `llama-3.1-70b-versatile` model, which pro
 - ⚡ **Extremely fast responses** (often under 1 second)
 - 🆓 **Generous free tier** (no credit card required)
 - 🧠 **High-quality responses** for career counseling
+
+## Authentication System
+
+The application uses NextAuth.js with a custom email/password authentication system:
+
+### Features
+- **Secure Registration**: Users can create accounts with email and password
+- **Password Hashing**: Passwords are securely hashed using bcrypt with salt rounds of 12
+- **Session Management**: JWT-based sessions with proper token handling
+- **Database Integration**: User data is stored in PostgreSQL using Drizzle ORM
+- **Form Validation**: Client and server-side validation for all inputs
+
+### API Endpoints
+- `POST /api/auth/register` - Register a new user
+- `POST /api/auth/[...nextauth]` - NextAuth.js authentication endpoints
+
+### Database Schema
+The `users` table includes:
+- `id` - Primary key (serial)
+- `email` - Unique email address
+- `password` - Hashed password
+- `name` - User's full name
+- `createdAt` - Account creation timestamp
+- `updatedAt` - Last update timestamp
+
+### UI Components
+The authentication system uses modern shadcn/ui components:
+- **Card Components**: Clean, modern card layouts for forms
+- **Form Components**: Accessible form inputs with proper labels
+- **Button Components**: Consistent button styling with loading states
+- **Input Components**: Styled inputs with icons and validation
+- **Responsive Design**: Mobile-first design that works on all devices
+- **Dark Mode**: Full dark mode support with proper contrast
+- **Gradient Backgrounds**: Beautiful gradient backgrounds for visual appeal
 
 ### Database Management
 

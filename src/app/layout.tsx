@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Oration AI Software Engineer assignment",
-  description: "Oration AI Software Engineer assignment",
+  title: "CareerPath AI - AI-Powered Career Counseling",
+  description: "Transform your career with personalized AI counseling, skill assessments, and strategic guidance. Discover your potential and unlock new opportunities.",
 };
 
 export default function RootLayout({

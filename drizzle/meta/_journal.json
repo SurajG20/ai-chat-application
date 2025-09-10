@@ -15,6 +15,13 @@
       "when": 1757443945920,
       "tag": "0001_lean_karnak",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1757523741666,
+      "tag": "0002_flippant_vivisector",
+      "breakpoints": true
     }
   ]
 }

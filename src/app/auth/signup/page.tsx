@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { AuthForm } from '@/components/auth/auth-form';
 
-export default function SignIn() {
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
+export default function SignUp() {
+  const [mode, setMode] = useState<'signin' | 'signup'>('signup');
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20 flex items-center justify-center p-4">

@@ -4,6 +4,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import { db } from '../../../../db';
 import { users } from '../../../../db/schema';
 import { eq } from 'drizzle-orm';
+import bcrypt from 'bcryptjs';
 
 const handler = NextAuth({
   adapter: DrizzleAdapter(db),
@@ -29,8 +30,13 @@ const handler = NextAuth({
           return null;
         }
 
-        // For demo purposes, we'll skip password verification
-        // In a real app, you'd verify the password hash
+        // Verify the password
+        const isValidPassword = await bcrypt.compare(credentials.password, user[0].password);
+        
+        if (!isValidPassword) {
+          return null;
+        }
+
         return {
           id: user[0].id.toString(),
           email: user[0].email,
@@ -58,6 +64,7 @@ const handler = NextAuth({
   },
   pages: {
     signIn: '/auth/signin',
+    signUp: '/auth/signup',
   },
 });
 
