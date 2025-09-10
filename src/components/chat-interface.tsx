@@ -2,7 +2,15 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { trpc } from '../utils/trpc';
-import { MessageCircle, Send, Plus, Trash2, Menu, X } from 'lucide-react';
+import { MessageCircle, Send, Plus, Trash2, Menu, X, Bot, User, Heart, LogOut } from 'lucide-react';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { ScrollArea } from './ui/scroll-area';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { Badge } from './ui/badge';
+import { useSession, signOut } from 'next-auth/react';
 // import type { ChatSession, Message } from '../db/schema';
 
 interface ChatInterfaceProps {
@@ -10,6 +18,7 @@ interface ChatInterfaceProps {
 }
 
 export function ChatInterface({ userId }: ChatInterfaceProps) {
+  const { data: session } = useSession();
   const [currentSessionId, setCurrentSessionId] = useState<number | null>(null);
   const [message, setMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -82,13 +91,17 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
     }
   };
 
+  const [newChatTitle, setNewChatTitle] = useState('');
+  const [isNewChatDialogOpen, setIsNewChatDialogOpen] = useState(false);
+
   const handleNewChat = () => {
-    const title = prompt('Enter a title for your new chat session:');
-    if (title) {
+    if (newChatTitle.trim()) {
       createSessionMutation.mutate({
         userId,
-        title,
+        title: newChatTitle.trim(),
       });
+      setNewChatTitle('');
+      setIsNewChatDialogOpen(false);
     }
   };
 
@@ -99,168 +112,299 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="flex h-screen bg-gradient-to-br from-background via-background to-secondary/20">
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      {/* Sidebar */}
-      <div className={`w-80 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col fixed lg:relative inset-y-0 left-0 z-50 lg:z-auto transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} transition-transform duration-300 ease-in-out`}>
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+      {/* Sidebar - Fixed Position */}
+      <div className={`w-80 bg-card border-r border-border flex flex-col fixed inset-y-0 left-0 z-50 lg:z-auto transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} transition-transform duration-300 ease-in-out shadow-lg`}>
+        {/* Fixed Header */}
+        <div className="flex-shrink-0 p-4 border-b border-border">
           <div className="flex items-center justify-between mb-4 lg:hidden">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Chat History</h2>
-            <button
+            <CardTitle className="text-lg font-semibold">Chat History</CardTitle>
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => setSidebarOpen(false)}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              className="p-2"
             >
-              <X className="w-5 h-5" />
-            </button>
+              <X className="w-4 h-4" />
+            </Button>
           </div>
-          <button
-            onClick={handleNewChat}
-            className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            New Chat
-          </button>
+          
+          {/* New Chat Dialog */}
+          <Dialog open={isNewChatDialogOpen} onOpenChange={setIsNewChatDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="w-full" size="lg">
+                <Plus className="w-4 h-4 mr-2" />
+                New Chat
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Start New Chat Session</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <Input
+                  placeholder="Enter a title for your chat session..."
+                  value={newChatTitle}
+                  onChange={(e) => setNewChatTitle(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleNewChat()}
+                />
+                <div className="flex gap-2 justify-end">
+                  <Button variant="outline" onClick={() => setIsNewChatDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleNewChat} disabled={!newChatTitle.trim()}>
+                    Create Chat
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">Chat History</h3>
-          {sessions?.map((session) => (
-            <div
-              key={session.id}
-              className={`p-3 rounded-lg mb-2 cursor-pointer transition-colors ${
-                currentSessionId === session.id
-                  ? 'bg-blue-100 dark:bg-blue-900 border border-blue-200 dark:border-blue-700'
-                  : 'hover:bg-gray-50 dark:hover:bg-gray-700'
-              }`}
-              onClick={() => {
-                setCurrentSessionId(session.id);
-                setSidebarOpen(false);
-              }}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                    {session.title}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {new Date(session.updatedAt).toLocaleDateString()}
-                  </p>
-                </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteSession(session.id);
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full">
+            <div className="p-4 space-y-2">
+              <h3 className="text-sm font-medium text-muted-foreground mb-3">Recent Chats</h3>
+              {sessions?.map((session) => (
+                <Card
+                  key={session.id}
+                  className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
+                    currentSessionId === session.id
+                      ? 'bg-primary/10 border-primary/20 shadow-md'
+                      : 'hover:bg-muted/50'
+                  }`}
+                  onClick={() => {
+                    setCurrentSessionId(session.id);
+                    setSidebarOpen(false);
                   }}
-                  className="text-gray-400 dark:text-gray-500 hover:text-red-500 transition-colors"
                 >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
+                  <CardContent className="p-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">
+                          {session.title}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(session.updatedAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteSession(session.id);
+                        }}
+                        className="text-muted-foreground hover:text-destructive p-1 h-auto"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
-          ))}
+          </ScrollArea>
+        </div>
+
+        {/* User Info and Logout - Fixed at Bottom */}
+        <div className="flex-shrink-0 p-3 border-t border-border">
+          <div className="flex items-center gap-2">
+            <Avatar className="w-7 h-7">
+              <AvatarImage src={session?.user?.image || ''} />
+              <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                {session?.user?.name?.charAt(0) || <User className="h-3 w-3" />}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">{session?.user?.name}</p>
+              <p className="text-xs text-muted-foreground">Career Seeker</p>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => signOut()}
+              className="text-muted-foreground hover:text-foreground p-1 h-auto"
+            >
+              <LogOut className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col lg:ml-0">
+      <div className="flex-1 flex flex-col ml-80 lg:ml-0">
         {/* Mobile Header */}
-        <div className="lg:hidden bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between">
-          <button
+        <div className="lg:hidden bg-card border-b border-border px-4 py-3 flex items-center justify-between shadow-sm">
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => setSidebarOpen(true)}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            className="p-2"
           >
             <Menu className="w-5 h-5" />
-          </button>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            {sessions?.find((s) => s.id === currentSessionId)?.title || 'Career Chat'}
-          </h2>
+          </Button>
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
+              <Heart className="h-3 w-3 text-primary-foreground" />
+            </div>
+            <h2 className="text-lg font-semibold">
+              {sessions?.find((s) => s.id === currentSessionId)?.title || 'CareerPath AI'}
+            </h2>
+          </div>
           <div className="w-9"></div> {/* Spacer for centering */}
         </div>
         {currentSessionId ? (
           <>
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900">
-              {messages?.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
+            <div className="flex-1 overflow-hidden">
+              <ScrollArea className="h-full">
+                <div className="p-6 space-y-4 max-w-6xl mx-auto">
+                {messages?.map((msg) => (
                   <div
-                    className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                      msg.role === 'user'
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white'
-                    }`}
+                    key={msg.id}
+                    className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
-                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                    <p className="text-xs opacity-70 mt-1">
-                      {new Date(msg.createdAt).toLocaleTimeString()}
-                    </p>
-                  </div>
-                </div>
-              ))}
-              
-              {isTyping && (
-                <div className="flex justify-start">
-                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-2">
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    {msg.role === 'assistant' && (
+                      <Avatar className="w-8 h-8 flex-shrink-0">
+                        <AvatarFallback className="bg-primary/10 text-primary">
+                          <Bot className="h-4 w-4" />
+                        </AvatarFallback>
+                      </Avatar>
+                    )}
+                    
+                    <div className={`flex flex-col gap-1 max-w-[85%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                      <Card className={`${
+                        msg.role === 'user'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-card border-border'
+                      }`}>
+                        <CardContent className="p-3">
+                          <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                            {msg.content}
+                          </p>
+                        </CardContent>
+                      </Card>
+                      <p className="text-xs text-muted-foreground px-1">
+                        {new Date(msg.createdAt).toLocaleTimeString()}
+                      </p>
                     </div>
+
+                    {msg.role === 'user' && (
+                      <Avatar className="w-8 h-8 flex-shrink-0">
+                        <AvatarFallback className="bg-accent/10 text-accent">
+                          <User className="h-4 w-4" />
+                        </AvatarFallback>
+                      </Avatar>
+                    )}
                   </div>
+                ))}
+                
+                {isTyping && (
+                  <div className="flex gap-3 justify-start">
+                    <Avatar className="w-8 h-8 flex-shrink-0">
+                      <AvatarFallback className="bg-primary/10 text-primary">
+                        <Bot className="h-4 w-4" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <Card className="bg-card border-border">
+                      <CardContent className="p-3">
+                        <div className="flex space-x-1">
+                          <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
+                          <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                          <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+                
+                <div ref={messagesEndRef} />
                 </div>
-              )}
-              
-              <div ref={messagesEndRef} />
+              </ScrollArea>
             </div>
 
-            {/* Message Input */}
-            <div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Ask about your career..."
-                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  disabled={isTyping}
-                />
-                <button
-                  onClick={handleSendMessage}
-                  disabled={!message.trim() || isTyping}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  <Send className="w-4 h-4" />
-                </button>
+            {/* Message Input - Fixed at Bottom */}
+            <div className="flex-shrink-0 border-t border-border p-6 bg-card">
+              <div className="max-w-6xl mx-auto">
+                <div className="flex gap-2">
+                  <Input
+                    type="text"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Ask about your career goals, skills, or get advice..."
+                    className="flex-1"
+                    disabled={isTyping}
+                  />
+                  <Button
+                    onClick={handleSendMessage}
+                    disabled={!message.trim() || isTyping}
+                    size="icon"
+                    className="shrink-0"
+                  >
+                    <Send className="w-4 h-4" />
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2 text-center">
+                  Press Enter to send, Shift+Enter for new line
+                </p>
               </div>
             </div>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center">
-              <MessageCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                Welcome to Career Counseling Chat
-              </h2>
-              <p className="text-gray-600 mb-6">
-                Start a new conversation to get personalized career advice
-              </p>
-              <button
-                onClick={handleNewChat}
-                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Start New Chat
-              </button>
-            </div>
+          <div className="flex-1 flex items-center justify-center p-8">
+            <Card className="max-w-2xl mx-auto text-center">
+              <CardContent className="p-8">
+                <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <Heart className="h-8 w-8 text-primary-foreground" />
+                </div>
+                <h2 className="text-2xl font-bold mb-3">
+                  Welcome to CareerPath AI
+                </h2>
+                <p className="text-muted-foreground mb-6 leading-relaxed">
+                  Start a new conversation to get personalized career advice, skill assessments, and strategic guidance from our AI counselor.
+                </p>
+                <Dialog open={isNewChatDialogOpen} onOpenChange={setIsNewChatDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="lg" className="w-full">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Start New Chat
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Start New Chat Session</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <Input
+                        placeholder="Enter a title for your chat session..."
+                        value={newChatTitle}
+                        onChange={(e) => setNewChatTitle(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleNewChat()}
+                      />
+                      <div className="flex gap-2 justify-end">
+                        <Button variant="outline" onClick={() => setIsNewChatDialogOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button onClick={handleNewChat} disabled={!newChatTitle.trim()}>
+                          Create Chat
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </CardContent>
+            </Card>
           </div>
         )}
       </div>

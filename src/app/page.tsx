@@ -88,8 +88,9 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20">
-      {/* Navigation */}
-      <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border shadow-sm">
+      {/* Navigation - Only show when not logged in */}
+      {!session && (
+        <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
@@ -179,6 +180,7 @@ export default function Home() {
           )}
         </div>
       </nav>
+      )}
       
       {status === 'loading' ? (
         <div className="flex items-center justify-center h-96">
@@ -188,7 +190,9 @@ export default function Home() {
           </div>
         </div>
       ) : session ? (
+        <div className="h-screen">
         <ChatInterface userId={parseInt((session.user as { id?: string })?.id || '0')} />
+        </div>
       ) : (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Hero Section */}
