@@ -24,6 +24,7 @@ import {
   Menu,
   X
 } from 'lucide-react';
+import Link from 'next/link';
 
 export default function Home() {
   const { data: session, status } = useSession();
@@ -206,14 +207,12 @@ export default function Home() {
                 Discover your potential and unlock new opportunities.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link href="/auth/signin">  
                 <Button size="lg" className="text-lg px-8 py-6">
                   Start Your Journey
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
-                <Button variant="outline" size="lg" className="text-lg px-8 py-6">
-                  <MessageCircle className="mr-2 h-5 w-5" />
-                  Try AI Counselor
-                </Button>
+                </Link>
               </div>
             </div>
           </section>
@@ -380,13 +379,12 @@ export default function Home() {
                   Start your journey today with our AI-powered career counseling.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Link href="/auth/signin">  
                   <Button size="lg" className="text-lg px-8 py-6">
                     Get Started Now
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
-                  <Button variant="outline" size="lg" className="text-lg px-8 py-6">
-                    Learn More
-                  </Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
