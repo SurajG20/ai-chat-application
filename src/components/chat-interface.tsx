@@ -23,6 +23,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
   const [message, setMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { data: sessions, refetch: refetchSessions } = trpc.chat.getSessions.useQuery(
@@ -102,6 +103,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
       });
       setNewChatTitle('');
       setIsNewChatDialogOpen(false);
+      setSidebarOpen(false); // Close mobile sidebar after creating new chat
     }
   };
 
@@ -122,7 +124,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
       )}
 
       {/* Sidebar - Fixed Position */}
-      <div className={`w-72 bg-card border-r border-border flex flex-col fixed inset-y-0 left-0 z-50 lg:z-auto transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} transition-transform duration-300 ease-in-out shadow-lg`}>
+      <div className={`${sidebarCollapsed ? 'w-16' : 'w-72'} bg-card border-r border-border flex flex-col fixed inset-y-0 left-0 z-50 lg:z-auto transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} transition-all duration-300 ease-in-out shadow-lg`}>
         {/* Fixed Header */}
         <div className="flex-shrink-0 p-4 border-b border-border">
           <div className="flex items-center justify-between mb-4 lg:hidden">
@@ -137,12 +139,25 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
             </Button>
           </div>
           
+          {/* Desktop Title and Toggle */}
+          <div className="hidden lg:flex items-center justify-between mb-4">
+            {!sidebarCollapsed && <CardTitle className="text-lg font-semibold">Chat History</CardTitle>}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="p-2"
+            >
+              {sidebarCollapsed ? <Menu className="w-4 h-4" /> : <X className="w-4 h-4" />}
+            </Button>
+          </div>
+          
           {/* New Chat Dialog */}
           <Dialog open={isNewChatDialogOpen} onOpenChange={setIsNewChatDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="w-full" size="lg">
-                <Plus className="w-4 h-4 mr-2" />
-                New Chat
+              <Button className={`w-full ${sidebarCollapsed ? 'px-2' : ''}`} size={sidebarCollapsed ? "icon" : "lg"}>
+                <Plus className="w-4 h-4" />
+                {!sidebarCollapsed && <span className="ml-2">New Chat</span>}
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -173,7 +188,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
         <div className="flex-1 overflow-hidden">
           <ScrollArea className="h-full">
             <div className="p-2 space-y-1">
-              <h3 className="text-sm font-medium text-muted-foreground mb-2 px-2">Recent Chats</h3>
+              {!sidebarCollapsed && <h3 className="text-sm font-medium text-muted-foreground mb-2 px-2">Recent Chats</h3>}
               {sessions?.map((session) => (
                 <div
                   key={session.id}
@@ -186,27 +201,40 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
                     setCurrentSessionId(session.id);
                     setSidebarOpen(false);
                   }}
+                  title={sidebarCollapsed ? session.title : undefined}
                 >
                   <div className="flex items-center justify-between">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">
-                        {session.title}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(session.updatedAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteSession(session.id);
-                      }}
-                      className="text-muted-foreground hover:text-destructive p-1 h-auto ml-1"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
+                    {sidebarCollapsed ? (
+                      <div className="w-full flex justify-center">
+                        <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                          <span className="text-xs font-medium text-primary">
+                            {session.title.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">
+                            {session.title}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(session.updatedAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteSession(session.id);
+                          }}
+                          className="text-muted-foreground hover:text-destructive p-1 h-auto ml-1"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </div>
               ))}
@@ -223,24 +251,29 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
                 {session?.user?.name?.charAt(0) || <User className="h-3 w-3" />}
               </AvatarFallback>
             </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{session?.user?.name}</p>
-              <p className="text-xs text-muted-foreground">Career Seeker</p>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => signOut()}
-              className="text-muted-foreground hover:text-foreground p-1 h-auto"
-            >
-              <LogOut className="w-4 h-4" />
-            </Button>
+            {!sidebarCollapsed && (
+              <>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{session?.user?.name}</p>
+                  <p className="text-xs text-muted-foreground">Career Seeker</p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => signOut()}
+                  className="text-muted-foreground hover:text-foreground p-1 h-auto"
+                >
+                  <LogOut className="w-4 h-4" />
+                </Button>
+              </>
+            )}
           </div>
         </div>
+
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col ml-72 lg:ml-72">
+      <div className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ml-0 lg:${sidebarCollapsed ? 'ml-16' : 'ml-72'} overflow-hidden`}>
         {/* Mobile Header */}
         <div className="lg:hidden bg-card border-b border-border px-4 py-3 flex items-center justify-between shadow-sm">
           <Button
@@ -255,22 +288,44 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
             <div className="w-6 h-6 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
               <Heart className="h-3 w-3 text-primary-foreground" />
             </div>
-            <h2 className="text-lg font-semibold">
+            <h2 className="text-lg font-semibold truncate max-w-[200px]">
               {sessions?.find((s) => s.id === currentSessionId)?.title || 'CareerPath AI'}
             </h2>
           </div>
           <div className="w-9"></div> {/* Spacer for centering */}
+        </div>
+
+        {/* Desktop Header with Sidebar Toggle */}
+        <div className="hidden lg:flex bg-card border-b border-border px-6 py-4 items-center justify-between shadow-sm relative z-10">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="p-2 hover:bg-muted/50"
+            >
+              <Menu className="w-5 h-5" />
+            </Button>
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
+                <Heart className="h-3 w-3 text-primary-foreground" />
+              </div>
+              <h2 className="text-lg font-semibold">
+                {sessions?.find((s) => s.id === currentSessionId)?.title || 'CareerPath AI'}
+              </h2>
+            </div>
+          </div>
         </div>
         {currentSessionId ? (
           <>
             {/* Messages */}
             <div className="flex-1 overflow-hidden">
               <ScrollArea className="h-full">
-                <div className="p-4 space-y-4">
+                <div className="px-4 py-3 lg:px-6 lg:py-4 space-y-3 lg:space-y-4">
                 {messages?.map((msg) => (
                   <div
                     key={msg.id}
-                    className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    className={`flex gap-2 lg:gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     {msg.role === 'assistant' && (
                       <Avatar className="w-8 h-8 flex-shrink-0">
@@ -280,7 +335,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
                       </Avatar>
                     )}
                     
-                    <div className={`flex flex-col gap-1 max-w-[85%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                    <div className={`flex flex-col gap-1 max-w-[80%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
                       <Card className={`${
                         msg.role === 'user'
                           ? 'bg-primary text-primary-foreground'
@@ -332,7 +387,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
             </div>
 
             {/* Message Input - Fixed at Bottom */}
-            <div className="flex-shrink-0 border-t border-border p-6 bg-card">
+            <div className="flex-shrink-0 border-t border-border p-4 lg:p-6 bg-card">
               <div className="max-w-6xl mx-auto">
                 <div className="flex gap-2">
                   <Input
@@ -341,7 +396,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
                     onChange={(e) => setMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Ask about your career goals, skills, or get advice..."
-                    className="flex-1"
+                    className="flex-1 text-sm lg:text-base"
                     disabled={isTyping}
                   />
                   <Button
@@ -353,7 +408,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
                     <Send className="w-4 h-4" />
                   </Button>
                 </div>
-                <p className="text-xs text-muted-foreground mt-2 text-center">
+                <p className="text-xs text-muted-foreground mt-2 text-center hidden lg:block">
                   Press Enter to send, Shift+Enter for new line
                 </p>
               </div>
@@ -409,4 +464,5 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
     </div>
   );
 }
+
 
