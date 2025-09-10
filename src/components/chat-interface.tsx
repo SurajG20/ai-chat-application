@@ -286,7 +286,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
                           ? 'bg-primary text-primary-foreground'
                           : 'bg-card border-border'
                       }`}>
-                        <CardContent className="p-2">
+                        <CardContent className="px-2 py-1">
                           <p className="text-sm whitespace-pre-wrap leading-relaxed">
                             {msg.content}
                           </p>
@@ -315,7 +315,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
                       </AvatarFallback>
                     </Avatar>
                     <Card className="bg-card border-border">
-                      <CardContent className="p-2">
+                      <CardContent className="px-2 py-1">
                         <div className="flex space-x-1">
                           <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
                           <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
