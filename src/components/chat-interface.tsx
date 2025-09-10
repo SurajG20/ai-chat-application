@@ -122,7 +122,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
       )}
 
       {/* Sidebar - Fixed Position */}
-      <div className={`w-80 bg-card border-r border-border flex flex-col fixed inset-y-0 left-0 z-50 lg:z-auto transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} transition-transform duration-300 ease-in-out shadow-lg`}>
+      <div className={`w-72 bg-card border-r border-border flex flex-col fixed inset-y-0 left-0 z-50 lg:z-auto transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} transition-transform duration-300 ease-in-out shadow-lg`}>
         {/* Fixed Header */}
         <div className="flex-shrink-0 p-4 border-b border-border">
           <div className="flex items-center justify-between mb-4 lg:hidden">
@@ -172,14 +172,14 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
         {/* Scrollable Content */}
         <div className="flex-1 overflow-hidden">
           <ScrollArea className="h-full">
-            <div className="p-4 space-y-2">
-              <h3 className="text-sm font-medium text-muted-foreground mb-3">Recent Chats</h3>
+            <div className="p-2 space-y-1">
+              <h3 className="text-sm font-medium text-muted-foreground mb-2 px-2">Recent Chats</h3>
               {sessions?.map((session) => (
-                <Card
+                <div
                   key={session.id}
-                  className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
+                  className={`cursor-pointer transition-all duration-200 rounded-lg p-2 mx-1 ${
                     currentSessionId === session.id
-                      ? 'bg-primary/10 border-primary/20 shadow-md'
+                      ? 'bg-primary/10 border border-primary/20'
                       : 'hover:bg-muted/50'
                   }`}
                   onClick={() => {
@@ -187,30 +187,28 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
                     setSidebarOpen(false);
                   }}
                 >
-                  <CardContent className="p-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">
-                          {session.title}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(session.updatedAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteSession(session.id);
-                        }}
-                        className="text-muted-foreground hover:text-destructive p-1 h-auto"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">
+                        {session.title}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(session.updatedAt).toLocaleDateString()}
+                      </p>
                     </div>
-                  </CardContent>
-                </Card>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteSession(session.id);
+                      }}
+                      className="text-muted-foreground hover:text-destructive p-1 h-auto ml-1"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
+                </div>
               ))}
             </div>
           </ScrollArea>
@@ -242,7 +240,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col ml-80 lg:ml-0">
+      <div className="flex-1 flex flex-col ml-72 lg:ml-72">
         {/* Mobile Header */}
         <div className="lg:hidden bg-card border-b border-border px-4 py-3 flex items-center justify-between shadow-sm">
           <Button
@@ -268,7 +266,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
             {/* Messages */}
             <div className="flex-1 overflow-hidden">
               <ScrollArea className="h-full">
-                <div className="p-6 space-y-4 max-w-6xl mx-auto">
+                <div className="p-4 space-y-4">
                 {messages?.map((msg) => (
                   <div
                     key={msg.id}
@@ -288,7 +286,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
                           ? 'bg-primary text-primary-foreground'
                           : 'bg-card border-border'
                       }`}>
-                        <CardContent className="p-3">
+                        <CardContent className="p-2">
                           <p className="text-sm whitespace-pre-wrap leading-relaxed">
                             {msg.content}
                           </p>
@@ -317,7 +315,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
                       </AvatarFallback>
                     </Avatar>
                     <Card className="bg-card border-border">
-                      <CardContent className="p-3">
+                      <CardContent className="p-2">
                         <div className="flex space-x-1">
                           <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
                           <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
