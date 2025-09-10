@@ -92,90 +92,87 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center shadow-lg">
-                <Heart className="h-6 w-6 text-primary-foreground" />
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center shadow-lg">
+                <Heart className="h-4 w-4 sm:h-6 sm:w-6 text-primary-foreground" />
               </div>
-          <div>
-                <span className="text-xl font-bold text-foreground">CareerPath AI</span>
+              <div className="hidden sm:block">
+                <span className="text-lg sm:text-xl font-bold text-foreground">CareerPath AI</span>
                 <div className="text-xs text-muted-foreground -mt-1">Your Career Companion</div>
               </div>
+              <div className="sm:hidden">
+                <span className="text-lg font-bold text-foreground">CareerPath AI</span>
+              </div>
             </div>
 
-            {/* Desktop Navigation Links */}
-            <div className="hidden md:flex items-center space-x-8">
-              <a href="#services" className="text-foreground hover:text-primary transition-colors duration-200 font-medium">
-                Services
-              </a>
-              <a href="#features" className="text-foreground hover:text-primary transition-colors duration-200 font-medium">
-                Features
-              </a>
-              <a href="#testimonials" className="text-foreground hover:text-primary transition-colors duration-200 font-medium">
-                Success Stories
-              </a>
-              <a href="#about" className="text-foreground hover:text-primary transition-colors duration-200 font-medium">
-                About
-              </a>
+            {/* Desktop Navigation Links - Only show when not logged in */}
+            {!session && (
+              <div className="hidden md:flex items-center space-x-8">
+                <a href="#services" className="text-foreground hover:text-primary transition-colors duration-200 font-medium">
+                  Services
+                </a>
+                <a href="#features" className="text-foreground hover:text-primary transition-colors duration-200 font-medium">
+                  Features
+                </a>
+                <a href="#testimonials" className="text-foreground hover:text-primary transition-colors duration-200 font-medium">
+                  Success Stories
+                </a>
+                <a href="#about" className="text-foreground hover:text-primary transition-colors duration-200 font-medium">
+                  About
+                </a>
           </div>
+            )}
 
             {/* Right Side Actions */}
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="sm" className="hidden sm:flex items-center gap-2 text-foreground hover:text-primary">
-                <MessageCircle className="h-4 w-4" />
-                <span className="hidden lg:inline">Try Demo</span>
-              </Button>
-              <ThemeToggle />
-              <AuthButton />
-              {/* Mobile Menu Button */}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="md:hidden"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              >
-                {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-              </Button>
+            <div className="flex items-center gap-2 sm:gap-3">
+            <ThemeToggle />
+            <AuthButton />
+              {/* Mobile Menu Button - Only show when not logged in */}
+              {!session && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="md:hidden p-2"
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                >
+                  {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+                </Button>
+              )}
             </div>
           </div>
 
-          {/* Mobile Navigation Menu */}
-          {isMobileMenuOpen && (
+          {/* Mobile Navigation Menu - Only show when not logged in */}
+          {!session && isMobileMenuOpen && (
             <div className="md:hidden border-t border-border bg-background/95 backdrop-blur-md animate-in slide-in-from-top-2 duration-200">
-              <div className="px-2 pt-2 pb-3 space-y-1">
+              <div className="px-4 py-3 space-y-2">
                 <a 
                   href="#services" 
-                  className="block px-3 py-2 text-foreground hover:text-primary hover:bg-primary/5 rounded-md transition-colors duration-200"
+                  className="block px-3 py-3 text-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-colors duration-200 font-medium"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Services
                 </a>
                 <a 
                   href="#features" 
-                  className="block px-3 py-2 text-foreground hover:text-primary hover:bg-primary/5 rounded-md transition-colors duration-200"
+                  className="block px-3 py-3 text-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-colors duration-200 font-medium"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Features
                 </a>
                 <a 
                   href="#testimonials" 
-                  className="block px-3 py-2 text-foreground hover:text-primary hover:bg-primary/5 rounded-md transition-colors duration-200"
+                  className="block px-3 py-3 text-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-colors duration-200 font-medium"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Success Stories
                 </a>
                 <a 
                   href="#about" 
-                  className="block px-3 py-2 text-foreground hover:text-primary hover:bg-primary/5 rounded-md transition-colors duration-200"
+                  className="block px-3 py-3 text-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-colors duration-200 font-medium"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   About
                 </a>
-                <div className="px-3 py-2">
-                  <Button variant="outline" size="sm" className="w-full justify-center gap-2">
-                    <MessageCircle className="h-4 w-4" />
-                    Try Demo
-                  </Button>
-                </div>
               </div>
             </div>
           )}
