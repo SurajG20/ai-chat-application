@@ -1,9 +1,10 @@
 'use client';
 
-import { useSession, signIn, signOut } from 'next-auth/react';
+import { useSession, signIn } from 'next-auth/react';
 import { Button } from './ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { LogIn, LogOut, User } from 'lucide-react';
+import { LogIn, User } from 'lucide-react';
+import { LogoutConfirmation } from './logout-confirmation';
 
 export function AuthButton() {
   const { data: session, status } = useSession();
@@ -32,15 +33,12 @@ export function AuthButton() {
             <div className="text-xs text-muted-foreground">Career Seeker</div>
           </div>
         </div>
-        <Button
+        <LogoutConfirmation
           variant="ghost"
           size="sm"
-          onClick={() => signOut()}
           className="text-muted-foreground hover:text-foreground p-2 sm:px-3"
-        >
-          <LogOut className="w-4 h-4 sm:mr-2" />
-          <span className="hidden lg:inline">Sign Out</span>
-        </Button>
+          showText={true}
+        />
       </div>
     );
   }

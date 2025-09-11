@@ -9,8 +9,9 @@ import { Card, CardContent, CardTitle } from './ui/card';
 import { ScrollArea } from './ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { useSession, signOut } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { ThemeToggle } from './theme-toggle';
+import { LogoutConfirmation } from './logout-confirmation';
 
 interface ChatInterfaceProps {
   userId?: number;
@@ -390,14 +391,11 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
                   <p className="text-sm font-medium truncate">{session?.user?.name}</p>
                   <p className="text-xs text-muted-foreground">Career Seeker</p>
                 </div>
-                <Button
+                <LogoutConfirmation
                   variant="ghost"
                   size="sm"
-                  onClick={() => signOut()}
                   className="text-muted-foreground hover:text-foreground p-1 h-auto"
-                >
-                  <LogOut className="w-4 h-4" />
-                </Button>
+                />
               </>
             )}
           </div>
