@@ -47,7 +47,7 @@ export function AuthButton() {
 
   return (
     <Button
-      onClick={() => signIn()}
+      onClick={() => signIn(undefined, { callbackUrl: '/chat' })}
       className="bg-primary hover:bg-primary/90 text-primary-foreground px-3 sm:px-4"
     >
       <LogIn className="w-4 h-4 sm:mr-2" />

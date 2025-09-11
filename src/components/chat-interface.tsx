@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Badge } from './ui/badge';
 import { useSession, signOut } from 'next-auth/react';
+import { ThemeToggle } from './theme-toggle';
 // import type { ChatSession, Message } from '../db/schema';
 
 interface ChatInterfaceProps {
@@ -139,17 +140,9 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
             </Button>
           </div>
           
-          {/* Desktop Title and Toggle */}
+          {/* Desktop Title (toggle moved to top header to avoid duplication) */}
           <div className="hidden lg:flex items-center justify-between mb-4">
             {!sidebarCollapsed && <CardTitle className="text-lg font-semibold">Chat History</CardTitle>}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className="p-2"
-            >
-              {sidebarCollapsed ? <Menu className="w-4 h-4" /> : <X className="w-4 h-4" />}
-            </Button>
           </div>
           
           {/* New Chat Dialog */}
@@ -273,7 +266,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
       </div>
 
       {/* Main Chat Area */}
-      <div className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ml-0 lg:${sidebarCollapsed ? 'ml-16' : 'ml-72'} overflow-hidden`}>
+      <div className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ml-0 ${sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-72'} overflow-hidden`}>
         {/* Mobile Header */}
         <div className="lg:hidden bg-card border-b border-border px-4 py-3 flex items-center justify-between shadow-sm">
           <Button
@@ -292,7 +285,9 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
               {sessions?.find((s) => s.id === currentSessionId)?.title || 'CareerPath AI'}
             </h2>
           </div>
-          <div className="w-9"></div> {/* Spacer for centering */}
+          <div className="w-9 flex justify-end">
+            <ThemeToggle />
+          </div>
         </div>
 
         {/* Desktop Header with Sidebar Toggle */}
@@ -314,6 +309,9 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
                 {sessions?.find((s) => s.id === currentSessionId)?.title || 'CareerPath AI'}
               </h2>
             </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
           </div>
         </div>
         {currentSessionId ? (

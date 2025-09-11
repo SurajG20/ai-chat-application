@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { ChatInterface } from '../components/chat-interface';
+// Chat moved to dedicated /chat page
 import { AuthButton } from '../components/auth-button';
 import { ThemeToggle } from '../components/theme-toggle';
 import { Button } from '../components/ui/button';
@@ -190,8 +190,19 @@ export default function Home() {
           </div>
         </div>
       ) : session ? (
-        <div className="h-screen">
-        <ChatInterface userId={parseInt((session.user as { id?: string })?.id || '0')} />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <section className="py-20 text-center">
+            <div className="max-w-3xl mx-auto">
+              <h2 className="text-4xl font-bold mb-4">Welcome back</h2>
+              <p className="text-lg text-muted-foreground mb-8">Continue your conversations and get guidance tailored to you.</p>
+              <Link href="/chat">
+                <Button size="lg" className="text-lg px-8 py-6">
+                  Go to Chat
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+            </div>
+          </section>
         </div>
       ) : (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

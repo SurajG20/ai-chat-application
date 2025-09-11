@@ -49,7 +49,7 @@ export function AuthForm({ mode, onModeChange }: AuthFormProps) {
           });
 
           if (result?.ok) {
-            window.location.href = '/';
+            window.location.href = '/chat';
           } else {
             setError('Registration successful, but sign in failed. Please try signing in manually.');
           }
@@ -65,7 +65,7 @@ export function AuthForm({ mode, onModeChange }: AuthFormProps) {
         });
 
         if (result?.ok) {
-          window.location.href = '/';
+          window.location.href = '/chat';
         } else {
           setError('Invalid credentials. Please try again.');
         }
