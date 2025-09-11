@@ -6,6 +6,7 @@ import { useState } from 'react';
 export function UserList() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   const { data: users, refetch } = trpc.users.getAll.useQuery();
   const createUser = trpc.users.create.useMutation({
@@ -13,6 +14,7 @@ export function UserList() {
       refetch();
       setName('');
       setEmail('');
+      setPassword('');
     },
   });
 
@@ -24,8 +26,8 @@ export function UserList() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (name && email) {
-      createUser.mutate({ name, email });
+    if (name && email && password) {
+      createUser.mutate({ name, email, password });
     }
   };
 
@@ -42,7 +44,7 @@ export function UserList() {
       {/* Create User Form */}
       <form onSubmit={handleSubmit} className="mb-8 p-4 border rounded-lg bg-gray-50">
         <h3 className="text-lg font-semibold mb-4">Add New User</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <div>
             <label htmlFor="name" className="block text-sm font-medium mb-1">
               Name
@@ -67,6 +69,20 @@ export function UserList() {
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
+            />
+          </div>
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium mb-1">
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+              minLength={6}
             />
           </div>
         </div>

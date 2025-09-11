@@ -1,15 +1,14 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { trpc } from '../utils/trpc';
-import { MessageCircle, Send, Plus, Trash2, Menu, X, Bot, User, Heart, LogOut, ArrowDown } from 'lucide-react';
+import { Send, Plus, Trash2, Menu, X, Bot, User, Heart, LogOut, ArrowDown } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Card, CardContent, CardTitle } from './ui/card';
 import { ScrollArea } from './ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { Badge } from './ui/badge';
 import { useSession, signOut } from 'next-auth/react';
 import { ThemeToggle } from './theme-toggle';
 
@@ -48,15 +47,6 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
     },
   });
 
-  const sendMessageMutation = trpc.chat.sendMessage.useMutation({
-    onSuccess: () => {
-      refetchMessages();
-      setIsTyping(false);
-    },
-    onError: () => {
-      setIsTyping(false);
-    },
-  });
 
   const deleteSessionMutation = trpc.chat.deleteSession.useMutation({
     onSuccess: () => {
@@ -160,7 +150,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
         setIsAtBottom(true);
       }, 100);
     }
-  }, [currentSessionId, scrollToBottom]);
+  }, [currentSessionId, messages, scrollToBottom]);
 
   const [shouldStream, setShouldStream] = useState(false);
   const [pendingMessage, setPendingMessage] = useState<{ sessionId: number; content: string; userId?: number } | null>(null);

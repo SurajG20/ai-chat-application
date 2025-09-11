@@ -8,10 +8,8 @@ import { ThemeToggle } from '../components/theme-toggle';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
-import { Separator } from '../components/ui/separator';
+import { Avatar, AvatarFallback } from '../components/ui/avatar';
 import { 
-  Users, 
   Target, 
   BookOpen, 
   MessageCircle, 
@@ -268,7 +266,7 @@ export default function Home() {
                 Trusted by Thousands
               </h2>
               <p className="text-lg text-muted-foreground">
-                Join the growing community of professionals who've transformed their careers
+                Join the growing community of professionals who&apos;ve transformed their careers
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
@@ -296,7 +294,7 @@ export default function Home() {
                 </h2>
                 <p className="text-lg text-muted-foreground mb-8">
                   Our comprehensive platform provides all the tools and guidance you need to advance your career, 
-                  whether you're just starting out or looking to make a major transition.
+                  whether you&apos;re just starting out or looking to make a major transition.
                 </p>
                 <div className="space-y-4">
                   {features.map((feature, index) => (
@@ -321,8 +319,8 @@ export default function Home() {
                     </div>
                     <div className="bg-muted p-4 rounded-lg">
                       <p className="text-sm">
-                        "Based on your skills and interests, I recommend exploring roles in Product Management. 
-                        You have strong analytical thinking and communication skills that would be perfect for this field."
+                        &ldquo;Based on your skills and interests, I recommend exploring roles in Product Management. 
+                        You have strong analytical thinking and communication skills that would be perfect for this field.&rdquo;
                       </p>
                     </div>
                     <div className="flex items-center space-x-3">
@@ -336,7 +334,7 @@ export default function Home() {
                     </div>
                     <div className="bg-primary/10 p-4 rounded-lg">
                       <p className="text-sm">
-                        "That sounds interesting! What skills should I focus on developing?"
+                        &ldquo;That sounds interesting! What skills should I focus on developing?&rdquo;
                       </p>
                     </div>
                   </div>
@@ -352,7 +350,7 @@ export default function Home() {
                 Success Stories
               </h2>
               <p className="text-lg text-muted-foreground">
-                Hear from professionals who've transformed their careers with our guidance
+                Hear from professionals who&apos;ve transformed their careers with our guidance
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -365,7 +363,7 @@ export default function Home() {
                       ))}
                     </div>
                     <p className="text-muted-foreground mb-6 italic">
-                      "{testimonial.content}"
+                      &ldquo;{testimonial.content}&rdquo;
                     </p>
                     <div className="flex items-center space-x-3">
                       <Avatar>
@@ -390,7 +388,7 @@ export default function Home() {
                   Ready to Transform Your Career?
                 </h2>
                 <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-                  Join thousands of professionals who've already discovered their ideal career path. 
+                  Join thousands of professionals who&apos;ve already discovered their ideal career path. 
                   Start your journey today with our AI-powered career counseling.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">

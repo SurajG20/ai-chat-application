@@ -20,11 +20,13 @@ export const usersRouter = router({
     .input(z.object({
       name: z.string().min(1),
       email: z.string().email(),
+      password: z.string().min(6),
     }))
     .mutation(async ({ input }) => {
       const newUser = await db.insert(users).values({
         name: input.name,
         email: input.email,
+        password: input.password,
       }).returning();
       return newUser[0];
     }),
@@ -52,5 +54,4 @@ export const usersRouter = router({
       return { success: true };
     }),
 
-  // getPosts removed - posts functionality not needed for career counseling chat
 });

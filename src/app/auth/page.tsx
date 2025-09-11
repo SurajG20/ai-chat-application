@@ -51,7 +51,7 @@ export default function AuthPage() {
             {/* Action Buttons */}
             <div className="space-y-3">
               <Link href="/auth/signin" className="block">
-                <Button className="w-full" size="lg" className="text-lg py-6">
+                <Button className="w-full text-lg py-6" size="lg">
                   <LogIn className="mr-2 h-5 w-5" />
                   Sign In to Continue
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -59,7 +59,7 @@ export default function AuthPage() {
               </Link>
               
               <Link href="/auth/signup" className="block">
-                <Button variant="outline" className="w-full" size="lg" className="text-lg py-6 border-primary/20 hover:bg-primary/5">
+                <Button variant="outline" className="w-full text-lg py-6 border-primary/20 hover:bg-primary/5" size="lg">
                   <UserPlus className="mr-2 h-5 w-5" />
                   Create New Account
                 </Button>
@@ -69,7 +69,7 @@ export default function AuthPage() {
             {/* Trust Indicators */}
             <div className="pt-4 border-t border-border">
               <p className="text-xs text-muted-foreground">
-                Join 10,000+ professionals who've transformed their careers
+                Join 10,000+ professionals who&apos;ve transformed their careers
               </p>
             </div>
           </CardContent>

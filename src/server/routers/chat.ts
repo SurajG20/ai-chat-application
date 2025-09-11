@@ -5,7 +5,6 @@ import { chatSessions, messages } from '../../db/schema';
 import { eq, desc } from 'drizzle-orm';
 import OpenAI from 'openai';
 import { observable } from '@trpc/server/observable';
-import { EventEmitter } from 'events';
 
 const getAIClient = () => {
   if (process.env.OPENAI_API_KEY) {
@@ -199,7 +198,7 @@ export const chatRouter = router({
       return observable<{ type: 'chunk' | 'complete' | 'error'; content?: string; messageId?: number }>((emit) => {
         const processMessage = async () => {
           try {
-            const userMessage = await db
+            await db
               .insert(messages)
               .values({
                 sessionId: input.sessionId,
