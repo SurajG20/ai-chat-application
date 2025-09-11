@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { trpc } from '../utils/trpc';
-import { MessageCircle, Send, Plus, Trash2, Menu, X, Bot, User, Heart, LogOut } from 'lucide-react';
+import { MessageCircle, Send, Plus, Trash2, Menu, X, Bot, User, Heart, LogOut, ArrowDown } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
@@ -12,7 +12,6 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Badge } from './ui/badge';
 import { useSession, signOut } from 'next-auth/react';
 import { ThemeToggle } from './theme-toggle';
-// import type { ChatSession, Message } from '../db/schema';
 
 interface ChatInterfaceProps {
   userId?: number;
@@ -25,7 +24,12 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
   const [isTyping, setIsTyping] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [streamingMessage, setStreamingMessage] = useState<string>('');
+  const [tempUserMessage, setTempUserMessage] = useState<{ content: string; timestamp: Date } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const streamBufferRef = useRef<string[]>([]);
+  const animationFrameRef = useRef<number | undefined>(undefined);
 
   const { data: sessions, refetch: refetchSessions } = trpc.chat.getSessions.useQuery(
     { userId },
@@ -65,25 +69,180 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
     },
   });
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  const scrollToBottom = useCallback(() => {
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+    
+    scrollTimeoutRef.current = setTimeout(() => {
+      if (messagesEndRef.current) {
+        const scrollContainer = messagesEndRef.current.closest('[data-radix-scroll-area-viewport]');
+        if (scrollContainer) {
+          scrollContainer.scrollTo({
+            top: scrollContainer.scrollHeight,
+            behavior: 'smooth'
+          });
+        } else {
+          messagesEndRef.current.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'nearest',
+            inline: 'nearest'
+          });
+        }
+      }
+    }, 30);
+  }, []);
+
+  const [isAtBottom, setIsAtBottom] = useState(true);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  const checkIfAtBottom = useCallback(() => {
+    const scrollContainer = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+    if (scrollContainer) {
+      const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
+      const threshold = 50;
+      const isAtBottomNow = scrollHeight - scrollTop - clientHeight < threshold;
+      setIsAtBottom(isAtBottomNow);
+    }
+  }, []);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    if (isAtBottom) {
+      scrollToBottom();
+    }
+  }, [messages, tempUserMessage, scrollToBottom, isAtBottom]);
 
-  const handleSendMessage = async () => {
+  useEffect(() => {
+    if (streamingMessage) {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      animationFrameRef.current = requestAnimationFrame(() => {
+        scrollToBottom();
+        setIsAtBottom(true);
+      });
+    }
+    
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [streamingMessage, scrollToBottom]);
+
+  useEffect(() => {
+    const scrollContainer = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+    if (scrollContainer) {
+      const handleScroll = () => {
+        checkIfAtBottom();
+      };
+      
+      scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+      return () => scrollContainer.removeEventListener('scroll', handleScroll);
+    }
+  }, [checkIfAtBottom]);
+
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (currentSessionId && messages && messages.length > 0) {
+      setTimeout(() => {
+        scrollToBottom();
+        setIsAtBottom(true);
+      }, 100);
+    }
+  }, [currentSessionId, scrollToBottom]);
+
+  const [shouldStream, setShouldStream] = useState(false);
+  const [pendingMessage, setPendingMessage] = useState<{ sessionId: number; content: string; userId?: number } | null>(null);
+
+  const processStreamBuffer = useCallback(() => {
+    if (streamBufferRef.current.length > 0) {
+      const charsToAdd = Math.min(3, streamBufferRef.current.length);
+      const chars = streamBufferRef.current.splice(0, charsToAdd).join('');
+      setStreamingMessage(prev => prev + chars);
+      
+      if (streamBufferRef.current.length > 0) {
+        requestAnimationFrame(processStreamBuffer);
+      }
+    }
+  }, []);
+
+  trpc.chat.sendMessageStream.useSubscription(
+    pendingMessage!,
+    {
+      enabled: shouldStream && !!pendingMessage,
+      onData: (data) => {
+        if (data.type === 'chunk' && data.content) {
+          streamBufferRef.current.push(...data.content.split(''));
+          processStreamBuffer();
+        } else if (data.type === 'complete') {
+          if (streamBufferRef.current.length > 0) {
+            const remaining = streamBufferRef.current.join('');
+            setStreamingMessage(prev => prev + remaining);
+            streamBufferRef.current = [];
+          }
+          
+          setTimeout(() => {
+            setStreamingMessage('');
+            setTempUserMessage(null);
+            setIsTyping(false);
+            setShouldStream(false);
+            setPendingMessage(null);
+            refetchMessages();
+          }, 100);
+        } else if (data.type === 'error') {
+          streamBufferRef.current = [];
+          setStreamingMessage(data.content || 'An error occurred');
+          setIsTyping(false);
+          setTimeout(() => {
+            setStreamingMessage('');
+            setTempUserMessage(null);
+            setShouldStream(false);
+            setPendingMessage(null);
+            refetchMessages();
+          }, 2000);
+        }
+      },
+      onError: () => {
+        streamBufferRef.current = [];
+        setIsTyping(false);
+        setStreamingMessage('');
+        setTempUserMessage(null);
+        setShouldStream(false);
+        setPendingMessage(null);
+      },
+    }
+  );
+
+  const handleSendMessage = () => {
     if (!message.trim() || !currentSessionId) return;
 
-    setIsTyping(true);
+    const userMessageContent = message;
     setMessage('');
+    setIsTyping(true);
+    setStreamingMessage('');
+    
+    setTempUserMessage({ 
+      content: userMessageContent, 
+      timestamp: new Date() 
+    });
 
-    await sendMessageMutation.mutateAsync({
+    setPendingMessage({
       sessionId: currentSessionId,
-      content: message,
+      content: userMessageContent,
       userId,
     });
+    setShouldStream(true);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -116,17 +275,13 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-background via-background to-secondary/20">
-      {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div 
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
-
-      {/* Sidebar - Fixed Position */}
       <div className={`${sidebarCollapsed ? 'w-16' : 'w-72'} bg-card border-r border-border flex flex-col fixed inset-y-0 left-0 z-50 lg:z-auto transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} transition-all duration-300 ease-in-out shadow-lg`}>
-        {/* Fixed Header */}
         <div className="flex-shrink-0 p-4 border-b border-border">
           <div className="flex items-center justify-between mb-4 lg:hidden">
             <CardTitle className="text-lg font-semibold">Chat History</CardTitle>
@@ -140,12 +295,9 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
             </Button>
           </div>
           
-          {/* Desktop Title (toggle moved to top header to avoid duplication) */}
           <div className="hidden lg:flex items-center justify-between mb-4">
             {!sidebarCollapsed && <CardTitle className="text-lg font-semibold">Chat History</CardTitle>}
           </div>
-          
-          {/* New Chat Dialog */}
           <Dialog open={isNewChatDialogOpen} onOpenChange={setIsNewChatDialogOpen}>
             <DialogTrigger asChild>
               <Button className={`w-full ${sidebarCollapsed ? 'px-2' : ''}`} size={sidebarCollapsed ? "icon" : "lg"}>
@@ -177,7 +329,6 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
           </Dialog>
         </div>
 
-        {/* Scrollable Content */}
         <div className="flex-1 overflow-hidden">
           <ScrollArea className="h-full">
             <div className="p-2 space-y-1">
@@ -235,7 +386,6 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
           </ScrollArea>
         </div>
 
-        {/* User Info and Logout - Fixed at Bottom */}
         <div className="flex-shrink-0 p-3 border-t border-border">
           <div className="flex items-center gap-2">
             <Avatar className="w-7 h-7">
@@ -265,9 +415,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
 
       </div>
 
-      {/* Main Chat Area */}
       <div className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ml-0 ${sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-72'} overflow-hidden`}>
-        {/* Mobile Header */}
         <div className="lg:hidden bg-card border-b border-border px-4 py-3 flex items-center justify-between shadow-sm">
           <Button
             variant="ghost"
@@ -290,7 +438,6 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
           </div>
         </div>
 
-        {/* Desktop Header with Sidebar Toggle */}
         <div className="hidden lg:flex bg-card border-b border-border px-6 py-4 items-center justify-between shadow-sm relative z-10">
           <div className="flex items-center gap-4">
             <Button
@@ -316,9 +463,8 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
         </div>
         {currentSessionId ? (
           <>
-            {/* Messages */}
-            <div className="flex-1 overflow-hidden">
-              <ScrollArea className="h-full">
+            <div className="flex-1 overflow-hidden relative">
+              <ScrollArea ref={scrollAreaRef} className="h-full">
                 <div className="px-4 py-3 lg:px-6 lg:py-4 space-y-3 lg:space-y-4">
                 {messages?.map((msg) => (
                   <div
@@ -360,20 +506,49 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
                   </div>
                 ))}
                 
-                {isTyping && (
-                  <div className="flex gap-3 justify-start">
+                {tempUserMessage && (
+                  <div className="flex gap-2 lg:gap-3 justify-end message-fade-in">
+                    <div className="flex flex-col gap-1 max-w-[80%] items-end">
+                      <Card className="bg-primary text-primary-foreground gpu-accelerated">
+                        <CardContent className="px-2 py-1">
+                          <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                            {tempUserMessage.content}
+                          </p>
+                        </CardContent>
+                      </Card>
+                      <p className="text-xs text-muted-foreground px-1">
+                        {tempUserMessage.timestamp.toLocaleTimeString()}
+                      </p>
+                    </div>
+                    <Avatar className="w-8 h-8 flex-shrink-0">
+                      <AvatarFallback className="bg-accent/10 text-accent">
+                        <User className="h-4 w-4" />
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+                )}
+                
+                {(isTyping || streamingMessage) && (
+                  <div className="flex gap-3 justify-start message-fade-in">
                     <Avatar className="w-8 h-8 flex-shrink-0">
                       <AvatarFallback className="bg-primary/10 text-primary">
                         <Bot className="h-4 w-4" />
                       </AvatarFallback>
                     </Avatar>
-                    <Card className="bg-card border-border">
+                    <Card className="bg-card border-border max-w-[80%] gpu-accelerated">
                       <CardContent className="px-2 py-1">
-                        <div className="flex space-x-1">
-                          <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
-                          <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                          <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                        </div>
+                        {streamingMessage ? (
+                          <p className="text-sm whitespace-pre-wrap leading-relaxed streaming-text">
+                            {streamingMessage}
+                            <span className="inline-block w-1 h-4 ml-0.5 bg-primary/60 streaming-cursor" />
+                          </p>
+                        ) : (
+                          <div className="flex space-x-1">
+                            <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
+                            <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                            <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                          </div>
+                        )}
                       </CardContent>
                     </Card>
                   </div>
@@ -382,9 +557,22 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
                 <div ref={messagesEndRef} />
                 </div>
               </ScrollArea>
+              
+              {!isAtBottom && (
+                <Button
+                  onClick={() => {
+                    scrollToBottom();
+                    setIsAtBottom(true);
+                  }}
+                  size="icon"
+                  className="absolute bottom-4 right-4 z-10 rounded-full shadow-lg bg-primary/90 hover:bg-primary"
+                  aria-label="Scroll to bottom"
+                >
+                  <ArrowDown className="w-4 h-4" />
+                </Button>
+              )}
             </div>
 
-            {/* Message Input - Fixed at Bottom */}
             <div className="flex-shrink-0 border-t border-border p-4 lg:p-6 bg-card">
               <div className="max-w-6xl mx-auto">
                 <div className="flex gap-2">
