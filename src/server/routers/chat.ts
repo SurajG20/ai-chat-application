@@ -3,33 +3,9 @@ import { router, publicProcedure } from '../trpc';
 import { db } from '../../db';
 import { chatSessions, messages } from '../../db/schema';
 import { eq, desc } from 'drizzle-orm';
-import OpenAI from 'openai';
 import { observable } from '@trpc/server/observable';
-
-const getAIClient = () => {
-  if (process.env.OPENAI_API_KEY) {
-    return {
-      client: new OpenAI({
-        apiKey: process.env.OPENAI_API_KEY,
-      }),
-      model: process.env.OPENAI_MODEL || 'gpt-3.5-turbo',
-      provider: 'openai'
-    };
-  }
-  if (process.env.GROQ_API_KEY) {
-    return {
-      client: new OpenAI({
-        apiKey: process.env.GROQ_API_KEY,
-        baseURL: 'https://api.groq.com/openai/v1',
-      }),
-      model: process.env.GROQ_MODEL || 'llama-3.1-8b-instant',
-      provider: 'groq'
-    };
-  }
-  return null;
-};
-
-const aiClient = getAIClient();
+import { aiService } from '../../lib/ai-service';
+import { ERROR_MESSAGES } from '../../lib/ai-config';
 
 export const chatRouter = router({
   getSessions: publicProcedure
@@ -57,17 +33,36 @@ export const chatRouter = router({
   createSession: publicProcedure
     .input(z.object({
       userId: z.number().optional(),
-      title: z.string().min(1),
+      title: z.string().min(1).optional(),
     }))
     .mutation(async ({ input }) => {
       const [row] = await db
         .insert(chatSessions)
         .values({
           userId: input.userId,
-          title: input.title,
+          title: input.title || 'New Chat',
         })
         .returning();
       return row;
+    }),
+
+  createSessionWithMessage: publicProcedure
+    .input(z.object({
+      userId: z.number().optional(),
+      firstMessage: z.string().min(1),
+    }))
+    .mutation(async ({ input }) => {
+      const title = await aiService.generateChatTitle(input.firstMessage);
+      
+      const [session] = await db
+        .insert(chatSessions)
+        .values({
+          userId: input.userId,
+          title,
+        })
+        .returning();
+      
+      return session;
     }),
 
   sendMessage: publicProcedure
@@ -97,33 +92,11 @@ export const chatRouter = router({
         content: msg.content,
       }));
 
-      const systemMessage = {
-        role: 'system' as const,
-        content: `You are a professional career counselor with expertise in helping people navigate their career paths. You provide thoughtful, personalized advice on:
-        - Career exploration and planning
-        - Skills assessment and development
-        - Job search strategies
-        - Interview preparation
-        - Professional networking
-        - Work-life balance
-        - Career transitions
-        - Industry insights and trends
-        
-        Always be encouraging, practical, and specific in your advice. Ask clarifying questions when needed to provide the most relevant guidance.`
-      };
-
       try {
-        let aiResponse = 'I apologize, but the AI service is not configured. Please set up your OpenAI or Groq API key to use this feature.';
+        let aiResponse = ERROR_MESSAGES.NO_API_KEY;
 
-        if (aiClient) {
-          const completion = await aiClient.client.chat.completions.create({
-            model: aiClient.model,
-            messages: [systemMessage, ...openaiMessages],
-            max_tokens: 500,
-            temperature: 0.7,
-          });
-
-          aiResponse = completion.choices[0]?.message?.content || 'I apologize, but I was unable to generate a response. Please try again.';
+        if (aiService.isAvailable()) {
+          aiResponse = await aiService.generateResponse(openaiMessages);
         }
 
         const [aiMessage] = await db
@@ -233,23 +206,8 @@ export const chatRouter = router({
               content: msg.content,
             }));
 
-            const systemMessage = {
-              role: 'system' as const,
-              content: `You are a professional career counselor with expertise in helping people navigate their career paths. You provide thoughtful, personalized advice on:
-              - Career exploration and planning
-              - Skills assessment and development
-              - Job search strategies
-              - Interview preparation
-              - Professional networking
-              - Work-life balance
-              - Career transitions
-              - Industry insights and trends
-              
-              Always be encouraging, practical, and specific in your advice. Ask clarifying questions when needed to provide the most relevant guidance.`
-            };
-
-            if (!aiClient) {
-              const errorMessage = 'I apologize, but the AI service is not configured. Please set up your OpenAI or Groq API key to use this feature.';
+            if (!aiService.isAvailable()) {
+              const errorMessage = ERROR_MESSAGES.NO_API_KEY;
               const [aiMessage] = await db
                 .insert(messages)
                 .values({
@@ -265,13 +223,7 @@ export const chatRouter = router({
               return;
             }
 
-            const stream = await aiClient.client.chat.completions.create({
-              model: aiClient.model,
-              messages: [systemMessage, ...openaiMessages],
-              max_tokens: 500,
-              temperature: 0.7,
-              stream: true,
-            });
+            const stream = aiService.generateStreamingResponse(openaiMessages);
 
             let fullResponse = '';
             let buffer = '';
@@ -279,7 +231,7 @@ export const chatRouter = router({
             
             // Process stream chunks with buffering for smoother client-side rendering
             for await (const chunk of stream) {
-              const content = chunk.choices[0]?.delta?.content || '';
+              const content = chunk.content || '';
               if (content) {
                 fullResponse += content;
                 buffer += content;

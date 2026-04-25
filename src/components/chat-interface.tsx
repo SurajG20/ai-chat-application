@@ -2,12 +2,11 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { trpc } from '../utils/trpc';
-import { Send, Plus, Trash2, Menu, X, Bot, User, Heart, LogOut, ArrowDown } from 'lucide-react';
+import { Send, Plus, Trash2, Menu, X, Bot, User, Heart, ArrowDown } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card, CardContent, CardTitle } from './ui/card';
 import { ScrollArea } from './ui/scroll-area';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { useSession } from 'next-auth/react';
 import { ThemeToggle } from './theme-toggle';
@@ -45,6 +44,14 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
     onSuccess: (session) => {
       setCurrentSessionId(session.id);
       refetchSessions();
+    },
+  });
+
+  const createSessionWithMessageMutation = trpc.chat.createSessionWithMessage.useMutation({
+    onSuccess: (session) => {
+      setCurrentSessionId(session.id);
+      refetchSessions();
+      setSidebarOpen(false); // Close mobile sidebar after creating new chat
     },
   });
 
@@ -216,7 +223,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
   );
 
   const handleSendMessage = () => {
-    if (!message.trim() || !currentSessionId) return;
+    if (!message.trim()) return;
 
     const userMessageContent = message;
     setMessage('');
@@ -228,12 +235,35 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
       timestamp: new Date() 
     });
 
-    setPendingMessage({
-      sessionId: currentSessionId,
-      content: userMessageContent,
-      userId,
-    });
-    setShouldStream(true);
+    // If no session exists, create one with auto-generated title
+    if (!currentSessionId) {
+      createSessionWithMessageMutation.mutate({
+        userId,
+        firstMessage: userMessageContent,
+      }, {
+        onSuccess: (session) => {
+          setCurrentSessionId(session.id);
+          setPendingMessage({
+            sessionId: session.id,
+            content: userMessageContent,
+            userId,
+          });
+          setShouldStream(true);
+        },
+        onError: () => {
+          setIsTyping(false);
+          setTempUserMessage(null);
+          setMessage(userMessageContent); // Restore message on error
+        }
+      });
+    } else {
+      setPendingMessage({
+        sessionId: currentSessionId,
+        content: userMessageContent,
+        userId,
+      });
+      setShouldStream(true);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -243,19 +273,22 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
     }
   };
 
-  const [newChatTitle, setNewChatTitle] = useState('');
-  const [isNewChatDialogOpen, setIsNewChatDialogOpen] = useState(false);
-
+  
   const handleNewChat = () => {
-    if (newChatTitle.trim()) {
-      createSessionMutation.mutate({
-        userId,
-        title: newChatTitle.trim(),
-      });
-      setNewChatTitle('');
-      setIsNewChatDialogOpen(false);
-      setSidebarOpen(false); // Close mobile sidebar after creating new chat
-    }
+    // Create a new session with a default title
+    createSessionMutation.mutate({
+      userId,
+      title: 'New Chat',
+    });
+    setSidebarOpen(false); // Close mobile sidebar after creating new chat
+  };
+
+  const handleStartNewChat = () => {
+    // Create a new session and immediately focus on the message input
+    createSessionMutation.mutate({
+      userId,
+      title: 'New Chat',
+    });
   };
 
   const handleDeleteSession = (sessionId: number) => {
@@ -289,35 +322,14 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
           <div className="hidden lg:flex items-center justify-between mb-4">
             {!sidebarCollapsed && <CardTitle className="text-lg font-semibold">Chat History</CardTitle>}
           </div>
-          <Dialog open={isNewChatDialogOpen} onOpenChange={setIsNewChatDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className={`w-full ${sidebarCollapsed ? 'px-2' : ''}`} size={sidebarCollapsed ? "icon" : "lg"}>
-                <Plus className="w-4 h-4" />
-                {!sidebarCollapsed && <span className="ml-2">New Chat</span>}
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Start New Chat Session</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <Input
-                  placeholder="Enter a title for your chat session..."
-                  value={newChatTitle}
-                  onChange={(e) => setNewChatTitle(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleNewChat()}
-                />
-                <div className="flex gap-2 justify-end">
-                  <Button variant="outline" onClick={() => setIsNewChatDialogOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleNewChat} disabled={!newChatTitle.trim()}>
-                    Create Chat
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Button 
+              className={`w-full ${sidebarCollapsed ? 'px-2' : ''}`} 
+              size={sidebarCollapsed ? "icon" : "lg"}
+              onClick={handleNewChat}
+            >
+              <Plus className="w-4 h-4" />
+              {!sidebarCollapsed && <span className="ml-2">New Chat</span>}
+            </Button>
         </div>
 
         <div className="flex-1 overflow-hidden">
@@ -601,35 +613,10 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
                 <p className="text-muted-foreground mb-6 leading-relaxed">
                   Start a new conversation to get personalized career advice, skill assessments, and strategic guidance from our AI counselor.
                 </p>
-                <Dialog open={isNewChatDialogOpen} onOpenChange={setIsNewChatDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button size="lg" className="w-full">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Start New Chat
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Start New Chat Session</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <Input
-                        placeholder="Enter a title for your chat session..."
-                        value={newChatTitle}
-                        onChange={(e) => setNewChatTitle(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && handleNewChat()}
-                      />
-                      <div className="flex gap-2 justify-end">
-                        <Button variant="outline" onClick={() => setIsNewChatDialogOpen(false)}>
-                          Cancel
-                        </Button>
-                        <Button onClick={handleNewChat} disabled={!newChatTitle.trim()}>
-                          Create Chat
-                        </Button>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
+                <Button size="lg" className="w-full" onClick={handleStartNewChat}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Start New Chat
+                </Button>
               </CardContent>
             </Card>
           </div>
