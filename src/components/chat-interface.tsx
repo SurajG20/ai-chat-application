@@ -267,7 +267,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey && !isTyping) {
       e.preventDefault();
       handleSendMessage();
     }
@@ -581,15 +581,15 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    placeholder="Ask about your career goals, skills, or get advice..."
+                    placeholder={isTyping ? "AI is responding... You can type your next message" : "Ask about your career goals, skills, or get advice..."}
                     className="flex-1 text-sm lg:text-base"
-                    disabled={isTyping}
                   />
                   <Button
                     onClick={handleSendMessage}
                     disabled={!message.trim() || isTyping}
                     size="icon"
                     className="shrink-0"
+                    title={isTyping ? "Please wait for AI response to complete" : "Send message"}
                   >
                     <Send className="w-4 h-4" />
                   </Button>
