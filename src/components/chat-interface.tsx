@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { trpc } from '../utils/trpc';
-import { Send, Plus, Trash2, Menu, X, Bot, User, Heart, ArrowDown } from 'lucide-react';
+import { Send, Plus, Trash2, Menu, X, Bot, User, Heart, ArrowDown, Square, Copy } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card, CardContent, CardTitle } from './ui/card';
@@ -11,6 +11,9 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { useSession } from 'next-auth/react';
 import { ThemeToggle } from './theme-toggle';
 import { LogoutConfirmation } from './logout-confirmation';
+import { formatMessageContent, copyToClipboard, extractPlainText, StreamingProcessor } from '../lib/message-formatter';
+import { ToastContainer } from './ui/toast';
+import { useToast } from '../hooks/use-toast';
 
 interface ChatInterfaceProps {
   userId?: number;
@@ -18,6 +21,7 @@ interface ChatInterfaceProps {
 
 export function ChatInterface({ userId }: ChatInterfaceProps) {
   const { data: session } = useSession();
+  const { toasts, removeToast, showSuccess, showError } = useToast();
   const [currentSessionId, setCurrentSessionId] = useState<number | null>(null);
   const [message, setMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -29,6 +33,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
   const scrollTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const streamBufferRef = useRef<string[]>([]);
   const animationFrameRef = useRef<number | undefined>(undefined);
+  const streamingProcessorRef = useRef<StreamingProcessor | null>(null);
 
   const { data: sessions, refetch: refetchSessions } = trpc.chat.getSessions.useQuery(
     { userId },
@@ -63,6 +68,12 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
       } else {
         setCurrentSessionId(null);
       }
+      refetchSessions();
+    },
+  });
+
+  const updateSessionTitleMutation = trpc.chat.updateSessionTitle.useMutation({
+    onSuccess: () => {
       refetchSessions();
     },
   });
@@ -141,6 +152,31 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
   }, [checkIfAtBottom]);
 
   useEffect(() => {
+    // Add global copy code function
+    (window as Window & { copyCode?: (button: HTMLButtonElement) => Promise<void> }).copyCode = async (button: HTMLButtonElement) => {
+      const codeBlock = button.closest('.code-block');
+      const codeElement = codeBlock?.querySelector('code');
+      if (codeElement) {
+        const codeText = codeElement.textContent || '';
+        const success = await copyToClipboard(codeText);
+        if (success) {
+          const originalText = button.innerHTML;
+          button.innerHTML = '✓ Copied';
+          button.style.color = 'hsl(var(--success))';
+          setTimeout(() => {
+            button.innerHTML = originalText;
+            button.style.color = '';
+          }, 2000);
+        }
+      }
+    };
+
+    return () => {
+      delete (window as Window & { copyCode?: (button: HTMLButtonElement) => Promise<void> }).copyCode;
+    };
+  }, []);
+
+  useEffect(() => {
     return () => {
       if (scrollTimeoutRef.current) {
         clearTimeout(scrollTimeoutRef.current);
@@ -167,7 +203,15 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
     if (streamBufferRef.current.length > 0) {
       const charsToAdd = Math.min(3, streamBufferRef.current.length);
       const chars = streamBufferRef.current.splice(0, charsToAdd).join('');
-      setStreamingMessage(prev => prev + chars);
+      
+      // Use streaming processor for smoother output
+      if (!streamingProcessorRef.current) {
+        streamingProcessorRef.current = new StreamingProcessor((text) => {
+          setStreamingMessage(text);
+        });
+      }
+      
+      streamingProcessorRef.current.addChunk(chars);
       
       if (streamBufferRef.current.length > 0) {
         requestAnimationFrame(processStreamBuffer);
@@ -186,8 +230,16 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
         } else if (data.type === 'complete') {
           if (streamBufferRef.current.length > 0) {
             const remaining = streamBufferRef.current.join('');
-            setStreamingMessage(prev => prev + remaining);
+            if (streamingProcessorRef.current) {
+              streamingProcessorRef.current.addChunk(remaining);
+            }
             streamBufferRef.current = [];
+          }
+          
+          // Complete the streaming processor
+          if (streamingProcessorRef.current) {
+            streamingProcessorRef.current.complete();
+            streamingProcessorRef.current = null;
           }
           
           setTimeout(() => {
@@ -218,12 +270,15 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
         setTempUserMessage(null);
         setShouldStream(false);
         setPendingMessage(null);
+        if (streamingProcessorRef.current) {
+          streamingProcessorRef.current = null;
+        }
       },
     }
   );
 
   const handleSendMessage = () => {
-    if (!message.trim()) return;
+    if (!message.trim() || isTyping) return;
 
     const userMessageContent = message;
     setMessage('');
@@ -249,6 +304,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
             userId,
           });
           setShouldStream(true);
+          refetchSessions(); // Refresh sessions to show updated title
         },
         onError: () => {
           setIsTyping(false);
@@ -257,13 +313,59 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
         }
       });
     } else {
+      // Check if this is the first message in a "New Chat" session
+      const currentSession = sessions?.find(s => s.id === currentSessionId);
+      const isFirstMessage = currentSession && (
+        currentSession.title === 'New Chat' || 
+        currentSession.title.startsWith('New Chat')
+      );
+      
       setPendingMessage({
         sessionId: currentSessionId,
         content: userMessageContent,
         userId,
       });
       setShouldStream(true);
+      
+      // If this is the first message in a "New Chat" session, generate a better title
+      if (isFirstMessage) {
+        // We'll update the title after the message is successfully sent
+        setTimeout(() => {
+          updateSessionTitleMutation.mutate({
+            sessionId: currentSessionId,
+            title: userMessageContent // This will be processed by AI to generate a proper title
+          });
+        }, 1000);
+      }
     }
+  };
+
+  const handleCopyMessage = async (content: string, isStreaming: boolean = false) => {
+    const plainText = extractPlainText(content);
+    const success = await copyToClipboard(plainText);
+    
+    if (success) {
+      showSuccess(
+        isStreaming ? 'Streaming response copied!' : 'Message copied to clipboard',
+        2000
+      );
+    } else {
+      showError('Failed to copy message', 3000);
+    }
+  };
+
+  const handleStopResponse = () => {
+    // Cancel streaming processor
+    if (streamingProcessorRef.current) {
+      streamingProcessorRef.current = null;
+    }
+    
+    setIsTyping(false);
+    setStreamingMessage('');
+    setTempUserMessage(null);
+    setShouldStream(false);
+    setPendingMessage(null);
+    refetchMessages();
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -485,15 +587,50 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
                           ? 'bg-primary text-primary-foreground'
                           : 'bg-card border-border'
                       }`}>
-                        <CardContent className="px-2 py-1">
-                          <p className="text-sm whitespace-pre-wrap leading-relaxed">
-                            {msg.content}
-                          </p>
+                        <CardContent className="px-3 py-2 relative group">
+                          {msg.role === 'assistant' && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1 h-auto"
+                              onClick={() => handleCopyMessage(msg.content)}
+                              title="Copy message"
+                            >
+                              <Copy className="w-3 h-3" />
+                            </Button>
+                          )}
+                          <div 
+                            className="text-sm whitespace-pre-wrap leading-relaxed message-content"
+                            dangerouslySetInnerHTML={{ 
+                              __html: msg.role === 'assistant' 
+                                ? formatMessageContent(msg.content) 
+                                : msg.content 
+                            }}
+                          />
                         </CardContent>
                       </Card>
-                      <p className="text-xs text-muted-foreground px-1">
-                        {new Date(msg.createdAt).toLocaleTimeString()}
-                      </p>
+                      {msg.role === 'assistant' && (
+                        <div className="flex items-center justify-between w-full px-1">
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(msg.createdAt).toLocaleTimeString()}
+                          </p>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="opacity-70 hover:opacity-100 transition-opacity p-1 h-auto text-muted-foreground hover:text-foreground"
+                            onClick={() => handleCopyMessage(msg.content)}
+                            title="Copy message"
+                          >
+                            <Copy className="w-3 h-3 mr-1" />
+                            <span className="text-xs">Copy</span>
+                          </Button>
+                        </div>
+                      )}
+                      {msg.role === 'user' && (
+                        <p className="text-xs text-muted-foreground px-1">
+                          {new Date(msg.createdAt).toLocaleTimeString()}
+                        </p>
+                      )}
                     </div>
 
                     {msg.role === 'user' && (
@@ -536,12 +673,25 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
                       </AvatarFallback>
                     </Avatar>
                     <Card className="bg-card border-border max-w-[80%] gpu-accelerated">
-                      <CardContent className="px-2 py-1">
+                      <CardContent className="px-3 py-2 relative group">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity p-1 h-auto"
+                          onClick={() => handleCopyMessage(streamingMessage, true)}
+                          title="Copy streaming message"
+                        >
+                          <Copy className="w-3 h-3" />
+                        </Button>
                         {streamingMessage ? (
-                          <p className="text-sm whitespace-pre-wrap leading-relaxed streaming-text">
-                            {streamingMessage}
+                          <div 
+                            className="text-sm whitespace-pre-wrap leading-relaxed streaming-text message-content"
+                            dangerouslySetInnerHTML={{ 
+                              __html: formatMessageContent(streamingMessage) 
+                            }}
+                          >
                             <span className="inline-block w-1 h-4 ml-0.5 bg-primary/60 streaming-cursor" />
-                          </p>
+                          </div>
                         ) : (
                           <div className="flex space-x-1">
                             <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
@@ -550,6 +700,23 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
                           </div>
                         )}
                       </CardContent>
+                      {streamingMessage && (
+                        <div className="flex items-center justify-between w-full px-1 pt-1">
+                          <p className="text-xs text-muted-foreground">
+                            Streaming...
+                          </p>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="opacity-70 hover:opacity-100 transition-opacity p-1 h-auto text-muted-foreground hover:text-foreground"
+                            onClick={() => handleCopyMessage(streamingMessage, true)}
+                            title="Copy streaming message"
+                          >
+                            <Copy className="w-3 h-3 mr-1" />
+                            <span className="text-xs">Copy</span>
+                          </Button>
+                        </div>
+                      )}
                     </Card>
                   </div>
                 )}
@@ -585,13 +752,13 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
                     className="flex-1 text-sm lg:text-base"
                   />
                   <Button
-                    onClick={handleSendMessage}
-                    disabled={!message.trim() || isTyping}
+                    onClick={isTyping ? handleStopResponse : handleSendMessage}
+                    disabled={!message.trim() && !isTyping}
                     size="icon"
                     className="shrink-0"
-                    title={isTyping ? "Please wait for AI response to complete" : "Send message"}
+                    title={isTyping ? "Stop response" : "Send message"}
                   >
-                    <Send className="w-4 h-4" />
+                    {isTyping ? <Square className="w-4 h-4" /> : <Send className="w-4 h-4" />}
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2 text-center hidden lg:block">
@@ -622,6 +789,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
           </div>
         )}
       </div>
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
     </div>
   );
 }

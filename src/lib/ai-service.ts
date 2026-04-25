@@ -88,11 +88,16 @@ export class AIService {
    * Generate chat title from first message
    */
   public async generateChatTitle(firstMessage: string): Promise<string> {
+    console.log('🎯 Generating title for message:', firstMessage.substring(0, 50) + '...');
+    
     if (!this.isAvailable()) {
+      console.log('⚠️ AI service not available, using fallback title generation');
       return this.generateFallbackTitle(firstMessage);
     }
 
     try {
+      console.log('🤖 Attempting AI title generation with model:', this.currentModel);
+      
       const completion = await this.client!.chat.completions.create({
         model: this.currentConfig!.model,
         messages: [
@@ -111,9 +116,16 @@ export class AIService {
       });
 
       const title = completion.choices[0]?.message?.content?.trim();
-      return title || this.generateFallbackTitle(firstMessage);
+      
+      if (title && title.length > 0) {
+        console.log('✅ AI generated title:', title);
+        return title;
+      } else {
+        console.log('⚠️ AI returned empty title, using fallback');
+        return this.generateFallbackTitle(firstMessage);
+      }
     } catch (error) {
-      console.error('Error generating chat title:', error);
+      console.error('❌ Error generating chat title:', error);
       return this.generateFallbackTitle(firstMessage);
     }
   }
@@ -204,8 +216,38 @@ export class AIService {
    * Generate fallback title when AI is unavailable
    */
   private generateFallbackTitle(message: string): string {
-    const words = message.trim().split(' ').slice(0, 4);
-    return words.join(' ') + (message.trim().split(' ').length > 4 ? '...' : '');
+    // Remove common prefixes and clean up the message
+    const cleanedMessage = message
+      .replace(/^(hi|hello|hey|help|can you|could you|please|i need|i want|i'm looking for)\s+/i, '')
+      .replace(/[!?.,;:]$/g, '')
+      .trim();
+    
+    const words = cleanedMessage.split(' ').filter(word => word.length > 0);
+    
+    if (words.length === 0) {
+      return 'New Chat';
+    }
+    
+    // Take first 3-5 words, aiming for reasonable length
+    const titleWords = words.slice(0, Math.min(4, words.length));
+    let title = titleWords.join(' ');
+    
+    // Capitalize first letter of each word
+    title = title.split(' ').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+    ).join(' ');
+    
+    // Add ellipsis if we truncated
+    if (words.length > 4) {
+      title += '...';
+    }
+    
+    // Ensure title is not too long
+    if (title.length > 50) {
+      title = title.substring(0, 47) + '...';
+    }
+    
+    return title || 'New Chat';
   }
 
   /**
