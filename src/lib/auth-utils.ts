@@ -8,23 +8,38 @@ export async function hashPassword(password: string): Promise<string> {
 }
 
 export async function createUser(email: string, password: string, name: string) {
-  const hashedPassword = await hashPassword(password);
-  
-  const newUser = await db.insert(users).values({
-    email,
-    password: hashedPassword,
-    name,
-  }).returning();
-
-  return newUser[0];
+  try {
+    const hashedPassword = await hashPassword(password);
+    
+    const [row] = await db
+      .insert(users)
+      .values({
+        email,
+        password: hashedPassword,
+        name,
+      })
+      .returning();
+    return row;
+  } catch (error) {
+    console.error('Error creating user:', error);
+    if (error instanceof Error && error.message.includes('duplicate key')) {
+      throw new Error('User with this email already exists');
+    }
+    throw new Error('Database error while creating user');
+  }
 }
 
 export async function getUserByEmail(email: string) {
-  const user = await db
-    .select()
-    .from(users)
-    .where(eq(users.email, email))
-    .limit(1);
+  try {
+    const user = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1);
 
-  return user[0] || null;
+    return user[0] || null;
+  } catch (error) {
+    console.error('Error fetching user by email:', error);
+    throw new Error('Database error while fetching user');
+  }
 }

@@ -1,4 +1,11 @@
-import { pgTable, serial, text, timestamp, varchar, integer } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  serial,
+  text,
+  timestamp,
+  varchar,
+  integer,
+} from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
@@ -9,10 +16,9 @@ export const users = pgTable('users', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-
 export const chatSessions = pgTable('chat_sessions', {
   id: serial('id').primaryKey(),
-  userId: integer('user_id').references(() => users.id),
+  userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }),
   title: varchar('title', { length: 255 }).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -20,9 +26,11 @@ export const chatSessions = pgTable('chat_sessions', {
 
 export const messages = pgTable('messages', {
   id: serial('id').primaryKey(),
-  sessionId: integer('session_id').references(() => chatSessions.id).notNull(),
+  sessionId: integer('session_id')
+    .references(() => chatSessions.id, { onDelete: 'cascade' })
+    .notNull(),
   content: text('content').notNull(),
-  role: varchar('role', { length: 20 }).notNull(), // 'user' or 'assistant'
+  role: varchar('role', { length: 20 }).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 

@@ -3,6 +3,7 @@ import { router, publicProcedure } from '../trpc';
 import { db } from '../../db';
 import { users } from '../../db/schema';
 import { eq } from 'drizzle-orm';
+import { hashPassword } from '../../lib/auth-utils';
 
 export const usersRouter = router({
   getAll: publicProcedure.query(async () => {
@@ -13,6 +14,9 @@ export const usersRouter = router({
     .input(z.object({ id: z.number() }))
     .query(async ({ input }) => {
       const user = await db.select().from(users).where(eq(users.id, input.id));
+      if (!user[0]) {
+        throw new Error('User not found');
+      }
       return user[0];
     }),
 
@@ -23,12 +27,16 @@ export const usersRouter = router({
       password: z.string().min(6),
     }))
     .mutation(async ({ input }) => {
-      const newUser = await db.insert(users).values({
-        name: input.name,
-        email: input.email,
-        password: input.password,
-      }).returning();
-      return newUser[0];
+      const hashedPassword = await hashPassword(input.password);
+      const [row] = await db
+        .insert(users)
+        .values({
+          name: input.name,
+          email: input.email,
+          password: hashedPassword,
+        })
+        .returning();
+      return row;
     }),
 
   update: publicProcedure
@@ -39,18 +47,33 @@ export const usersRouter = router({
     }))
     .mutation(async ({ input }) => {
       const { id, ...updateData } = input;
-      const updatedUser = await db
+      
+      if (Object.keys(updateData).length === 0) {
+        throw new Error('At least one field must be provided for update');
+      }
+      
+      const [updatedUser] = await db
         .update(users)
         .set(updateData)
         .where(eq(users.id, id))
         .returning();
-      return updatedUser[0];
+      
+      if (!updatedUser) {
+        throw new Error('User not found');
+      }
+      
+      return updatedUser;
     }),
 
   delete: publicProcedure
     .input(z.object({ id: z.number() }))
     .mutation(async ({ input }) => {
-      await db.delete(users).where(eq(users.id, input.id));
+      const result = await db.delete(users).where(eq(users.id, input.id));
+      
+      if (result.rowCount === 0) {
+        throw new Error('User not found');
+      }
+      
       return { success: true };
     }),
 

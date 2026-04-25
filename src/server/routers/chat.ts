@@ -60,14 +60,14 @@ export const chatRouter = router({
       title: z.string().min(1),
     }))
     .mutation(async ({ input }) => {
-      const newSession = await db
+      const [row] = await db
         .insert(chatSessions)
         .values({
           userId: input.userId,
           title: input.title,
         })
         .returning();
-      return newSession[0];
+      return row;
     }),
 
   sendMessage: publicProcedure
@@ -77,7 +77,7 @@ export const chatRouter = router({
       userId: z.number().optional(),
     }))
     .mutation(async ({ input }) => {
-      const userMessage = await db
+      const [userMessage] = await db
         .insert(messages)
         .values({
           sessionId: input.sessionId,
@@ -126,7 +126,7 @@ export const chatRouter = router({
           aiResponse = completion.choices[0]?.message?.content || 'I apologize, but I was unable to generate a response. Please try again.';
         }
 
-        const aiMessage = await db
+        const [aiMessage] = await db
           .insert(messages)
           .values({
             sessionId: input.sessionId,
@@ -141,13 +141,13 @@ export const chatRouter = router({
           .where(eq(chatSessions.id, input.sessionId));
 
         return {
-          userMessage: userMessage[0],
-          aiMessage: aiMessage[0],
+          userMessage,
+          aiMessage,
         };
       } catch (error) {
         console.error('OpenAI API error:', error);
 
-        const errorMessage = await db
+        const [errorMessage] = await db
           .insert(messages)
           .values({
             sessionId: input.sessionId,
@@ -157,8 +157,8 @@ export const chatRouter = router({
           .returning();
 
         return {
-          userMessage: userMessage[0],
-          aiMessage: errorMessage[0],
+          userMessage,
+          aiMessage: errorMessage,
         };
       }
     }),
@@ -169,7 +169,7 @@ export const chatRouter = router({
       title: z.string().min(1),
     }))
     .mutation(async ({ input }) => {
-      const updatedSession = await db
+      const [updatedSession] = await db
         .update(chatSessions)
         .set({
           title: input.title,
@@ -177,14 +177,32 @@ export const chatRouter = router({
         })
         .where(eq(chatSessions.id, input.sessionId))
         .returning();
-      return updatedSession[0];
+      
+      if (!updatedSession) {
+        throw new Error('Chat session not found');
+      }
+      
+      return updatedSession;
     }),
 
   deleteSession: publicProcedure
     .input(z.object({ sessionId: z.number() }))
     .mutation(async ({ input }) => {
+      // First check if session exists
+      const session = await db
+        .select()
+        .from(chatSessions)
+        .where(eq(chatSessions.id, input.sessionId))
+        .limit(1);
+      
+      if (!session[0]) {
+        throw new Error('Chat session not found');
+      }
+      
+      // Delete messages first due to foreign key constraint
       await db.delete(messages).where(eq(messages.sessionId, input.sessionId));
       await db.delete(chatSessions).where(eq(chatSessions.id, input.sessionId));
+      
       return { success: true };
     }),
 
@@ -198,14 +216,11 @@ export const chatRouter = router({
       return observable<{ type: 'chunk' | 'complete' | 'error'; content?: string; messageId?: number }>((emit) => {
         const processMessage = async () => {
           try {
-            await db
-              .insert(messages)
-              .values({
-                sessionId: input.sessionId,
-                content: input.content,
-                role: 'user',
-              })
-              .returning();
+            await db.insert(messages).values({
+              sessionId: input.sessionId,
+              content: input.content,
+              role: 'user',
+            });
 
             const conversationHistory = await db
               .select()
@@ -235,7 +250,7 @@ export const chatRouter = router({
 
             if (!aiClient) {
               const errorMessage = 'I apologize, but the AI service is not configured. Please set up your OpenAI or Groq API key to use this feature.';
-              const aiMessage = await db
+              const [aiMessage] = await db
                 .insert(messages)
                 .values({
                   sessionId: input.sessionId,
@@ -243,9 +258,9 @@ export const chatRouter = router({
                   role: 'assistant',
                 })
                 .returning();
-              
+
               emit.next({ type: 'chunk', content: errorMessage });
-              emit.next({ type: 'complete', messageId: aiMessage[0].id });
+              emit.next({ type: 'complete', messageId: aiMessage.id });
               emit.complete();
               return;
             }
@@ -282,7 +297,7 @@ export const chatRouter = router({
               emit.next({ type: 'chunk', content: buffer });
             }
 
-            const aiMessage = await db
+            const [aiMessage] = await db
               .insert(messages)
               .values({
                 sessionId: input.sessionId,
@@ -296,13 +311,13 @@ export const chatRouter = router({
               .set({ updatedAt: new Date() })
               .where(eq(chatSessions.id, input.sessionId));
 
-            emit.next({ type: 'complete', messageId: aiMessage[0].id });
+            emit.next({ type: 'complete', messageId: aiMessage.id });
             emit.complete();
           } catch (error) {
             console.error('Streaming error:', error);
             
             const errorMessage = 'I apologize, but I encountered an error while processing your request. Please try again.';
-            const aiMessage = await db
+            const [aiMessage] = await db
               .insert(messages)
               .values({
                 sessionId: input.sessionId,
@@ -312,7 +327,7 @@ export const chatRouter = router({
               .returning();
 
             emit.next({ type: 'error', content: errorMessage });
-            emit.next({ type: 'complete', messageId: aiMessage[0].id });
+            emit.next({ type: 'complete', messageId: aiMessage.id });
             emit.complete();
           }
         };
