@@ -36,6 +36,7 @@ export interface StreamData {
   type: 'chunk' | 'complete' | 'error';
   content?: string;
   messageId?: number;
+  sessionId?: number;
 }
 
 export interface TempUserMessage {

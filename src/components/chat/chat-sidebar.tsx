@@ -17,6 +17,7 @@ interface ChatSidebarProps {
   accentColor: AccentColor;
   userName?: string | null;
   userImage?: string | null;
+  activeStreamingSessions: number[];
   onSessionSelect: (sessionId: number) => void;
   onCreateSession: () => void;
   onDeleteSession: (sessionId: number) => void;
@@ -30,6 +31,7 @@ const SessionItem = memo(function SessionItem({
   isActive,
   isCollapsed,
   accentColor,
+  isStreaming,
   onSelect,
   onDelete,
 }: {
@@ -37,6 +39,7 @@ const SessionItem = memo(function SessionItem({
   isActive: boolean;
   isCollapsed: boolean;
   accentColor: AccentColor;
+  isStreaming: boolean;
   onSelect: () => void;
   onDelete: (e: React.MouseEvent) => void;
 }) {
@@ -51,7 +54,7 @@ const SessionItem = memo(function SessionItem({
     >
       <div className="flex items-center justify-between">
         {isCollapsed ? (
-          <div className="w-full flex justify-center">
+          <div className="w-full flex justify-center relative">
             <div 
               className="w-8 h-8 rounded-full flex items-center justify-center" 
               style={{ backgroundColor: accentColor }}
@@ -60,6 +63,12 @@ const SessionItem = memo(function SessionItem({
                 {session.title.charAt(0).toUpperCase()}
               </span>
             </div>
+            {isStreaming && (
+              <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: accentColor }}></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+              </span>
+            )}
           </div>
         ) : (
           <>
@@ -67,9 +76,20 @@ const SessionItem = memo(function SessionItem({
               <p className="text-sm font-medium text-white truncate">
                 {session.title}
               </p>
-              <p className="label-mono-sm text-[#949494] text-xs">
-                {new Date(session.updatedAt).toLocaleDateString()}
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="label-mono-sm text-[#949494] text-xs">
+                  {new Date(session.updatedAt).toLocaleDateString()}
+                </p>
+                {isStreaming && (
+                  <span className="flex items-center gap-1 text-xs" style={{ color: accentColor }}>
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: accentColor }}></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: accentColor }}></span>
+                    </span>
+                    <span className="label-mono-sm">typing...</span>
+                  </span>
+                )}
+              </div>
             </div>
             <Button
               variant="ghost"
@@ -94,6 +114,7 @@ export const ChatSidebar = memo(function ChatSidebar({
   accentColor,
   userName,
   userImage,
+  activeStreamingSessions,
   onSessionSelect,
   onCreateSession,
   onDeleteSession,
@@ -173,6 +194,7 @@ export const ChatSidebar = memo(function ChatSidebar({
                   isActive={currentSessionId === session.id}
                   isCollapsed={isCollapsed}
                   accentColor={accentColor}
+                  isStreaming={activeStreamingSessions.includes(session.id)}
                   onSelect={handleSelect(session.id)}
                   onDelete={handleDelete(session.id)}
                 />

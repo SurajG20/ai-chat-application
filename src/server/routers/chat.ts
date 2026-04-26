@@ -186,7 +186,7 @@ export const chatRouter = router({
       userId: z.number().optional(),
     }))
     .subscription(({ input }) => {
-      return observable<{ type: 'chunk' | 'complete' | 'error'; content?: string; messageId?: number }>((emit) => {
+      return observable<{ type: 'chunk' | 'complete' | 'error'; content?: string; messageId?: number; sessionId?: number }>((emit) => {
         const processMessage = async () => {
           try {
             await db.insert(messages).values({
@@ -217,8 +217,8 @@ export const chatRouter = router({
                 })
                 .returning();
 
-              emit.next({ type: 'chunk', content: errorMessage });
-              emit.next({ type: 'complete', messageId: aiMessage.id });
+              emit.next({ type: 'chunk', content: errorMessage, sessionId: input.sessionId });
+              emit.next({ type: 'complete', messageId: aiMessage.id, sessionId: input.sessionId });
               emit.complete();
               return;
             }
@@ -238,7 +238,7 @@ export const chatRouter = router({
                 
                 // Send buffered content when buffer reaches threshold or contains punctuation
                 if (buffer.length >= BUFFER_SIZE || /[.!?,;:\n]/.test(buffer)) {
-                  emit.next({ type: 'chunk', content: buffer });
+                  emit.next({ type: 'chunk', content: buffer, sessionId: input.sessionId });
                   buffer = '';
                 }
               }
@@ -246,7 +246,7 @@ export const chatRouter = router({
             
             // Send any remaining buffered content
             if (buffer) {
-              emit.next({ type: 'chunk', content: buffer });
+              emit.next({ type: 'chunk', content: buffer, sessionId: input.sessionId });
             }
 
             const [aiMessage] = await db
@@ -263,7 +263,7 @@ export const chatRouter = router({
               .set({ updatedAt: new Date() })
               .where(eq(chatSessions.id, input.sessionId));
 
-            emit.next({ type: 'complete', messageId: aiMessage.id });
+            emit.next({ type: 'complete', messageId: aiMessage.id, sessionId: input.sessionId });
             emit.complete();
           } catch (error) {
             console.error('Streaming error:', error);
@@ -278,8 +278,8 @@ export const chatRouter = router({
               })
               .returning();
 
-            emit.next({ type: 'error', content: errorMessage });
-            emit.next({ type: 'complete', messageId: aiMessage.id });
+            emit.next({ type: 'error', content: errorMessage, sessionId: input.sessionId });
+            emit.next({ type: 'complete', messageId: aiMessage.id, sessionId: input.sessionId });
             emit.complete();
           }
         };

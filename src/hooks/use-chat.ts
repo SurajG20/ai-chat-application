@@ -25,8 +25,7 @@ interface UseChatReturn {
   isTyping: boolean;
   streamingMessage: string;
   tempUserMessage: TempUserMessage | null;
-  shouldStream: boolean;
-  pendingMessage: SendMessageInput | null;
+  activeStreamingSessions: number[];
   
   // Data queries
   sessions: ChatSession[] | undefined;
@@ -36,10 +35,6 @@ interface UseChatReturn {
   handleSendMessage: () => void;
   handleStopResponse: () => void;
   handleSelectQuickPrompt: (prompt: string, onStartNewChat?: () => void) => void;
-  
-  // Refs
-  streamBufferRef: React.MutableRefObject<string[]>;
-  streamingProcessorRef: React.MutableRefObject<StreamingProcessor | null>;
 }
 
 // Streaming processor for smooth text animation
@@ -88,17 +83,23 @@ export function useChat({ userId }: UseChatProps): UseChatReturn {
   // Core state
   const [currentSessionId, setCurrentSessionId] = useState<number | null>(null);
   const [message, setMessage] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-  const [streamingMessage, setStreamingMessage] = useState('');
-  const [tempUserMessage, setTempUserMessage] = useState<TempUserMessage | null>(null);
   
-  // Streaming state
-  const [shouldStream, setShouldStream] = useState(false);
-  const [pendingMessage, setPendingMessage] = useState<SendMessageInput | null>(null);
+  // Per-session streaming state using Maps
+  const [isTypingPerSession, setIsTypingPerSession] = useState<Map<number, boolean>>(new Map());
+  const [streamingMessages, setStreamingMessages] = useState<Map<number, string>>(new Map());
+  const [tempUserMessages, setTempUserMessages] = useState<Map<number, TempUserMessage>>(new Map());
+  const [pendingMessages, setPendingMessages] = useState<Map<number, SendMessageInput>>(new Map());
+  const [shouldStreamPerSession, setShouldStreamPerSession] = useState<Map<number, boolean>>(new Map());
   
-  // Refs
-  const streamBufferRef = useRef<string[]>([]);
-  const streamingProcessorRef = useRef<StreamingProcessor | null>(null);
+  // Per-session refs using Maps
+  const streamBuffers = useRef<Map<number, string[]>>(new Map());
+  const streamingProcessors = useRef<Map<number, StreamingProcessor>>(new Map());
+
+  // Derived state for current session
+  const isTyping = currentSessionId ? (isTypingPerSession.get(currentSessionId) ?? false) : false;
+  const streamingMessage = currentSessionId ? (streamingMessages.get(currentSessionId) ?? '') : '';
+  const tempUserMessage = currentSessionId ? (tempUserMessages.get(currentSessionId) ?? null) : null;
+  const activeStreamingSessions = Array.from(pendingMessages.keys());
 
   // Data fetching
   const { data: sessions, refetch: refetchSessions } = trpc.chat.getSessions.useQuery(
@@ -125,111 +126,258 @@ export function useChat({ userId }: UseChatProps): UseChatReturn {
     },
   });
 
-  // Clear state when switching sessions
+  // Clear temp message when switching sessions (but keep streaming state)
   useEffect(() => {
-    setStreamingMessage('');
-    setTempUserMessage(null);
-    setIsTyping(false);
-    setShouldStream(false);
-    setPendingMessage(null);
-    streamBufferRef.current = [];
-    if (streamingProcessorRef.current) {
-      streamingProcessorRef.current.reset();
-      streamingProcessorRef.current = null;
+    if (currentSessionId) {
+      // Only clear temp message for current session, keep streaming state
+      setTempUserMessages(prev => {
+        const next = new Map(prev);
+        // Don't clear here - the temp message should persist until stream completes
+        return next;
+      });
     }
   }, [currentSessionId]);
 
-  // Process stream buffer
-  const processStreamBuffer = useCallback(() => {
-    if (streamBufferRef.current.length > 0) {
-      const charsToAdd = Math.min(3, streamBufferRef.current.length);
-      const chars = streamBufferRef.current.splice(0, charsToAdd).join('');
+  // Process stream buffer for a specific session
+  const processStreamBuffer = useCallback((sessionId: number) => {
+    const buffer = streamBuffers.current.get(sessionId);
+    if (buffer && buffer.length > 0) {
+      const charsToAdd = Math.min(3, buffer.length);
+      const chars = buffer.splice(0, charsToAdd).join('');
       
-      if (!streamingProcessorRef.current) {
-        streamingProcessorRef.current = new StreamingProcessor((text) => {
-          setStreamingMessage(text);
+      let processor = streamingProcessors.current.get(sessionId);
+      if (!processor) {
+        processor = new StreamingProcessor((text) => {
+          setStreamingMessages(prev => {
+            const next = new Map(prev);
+            next.set(sessionId, text);
+            return next;
+          });
         });
+        streamingProcessors.current.set(sessionId, processor);
       }
       
-      streamingProcessorRef.current.addChunk(chars);
+      processor.addChunk(chars);
       
-      if (streamBufferRef.current.length > 0) {
-        requestAnimationFrame(processStreamBuffer);
+      if (buffer.length > 0) {
+        requestAnimationFrame(() => processStreamBuffer(sessionId));
       }
     }
   }, []);
 
-  // Streaming subscription
+  // Handle stream data for a specific session
+  const handleStreamData = useCallback((data: StreamData) => {
+    const sessionId = data.sessionId;
+    if (!sessionId) return;
+
+    if (data.type === 'chunk' && data.content) {
+      const buffer = streamBuffers.current.get(sessionId) || [];
+      buffer.push(...data.content.split(''));
+      streamBuffers.current.set(sessionId, buffer);
+      processStreamBuffer(sessionId);
+    } else if (data.type === 'complete') {
+      const buffer = streamBuffers.current.get(sessionId);
+      if (buffer && buffer.length > 0) {
+        const remaining = buffer.join('');
+        const processor = streamingProcessors.current.get(sessionId);
+        if (processor) {
+          processor.addChunk(remaining);
+        }
+        buffer.length = 0;
+      }
+      
+      const processor = streamingProcessors.current.get(sessionId);
+      if (processor) {
+        processor.complete();
+        streamingProcessors.current.delete(sessionId);
+      }
+      
+      // Clear stream state for this session after a delay
+      setTimeout(() => {
+        setStreamingMessages(prev => {
+          const next = new Map(prev);
+          next.delete(sessionId);
+          return next;
+        });
+        setTempUserMessages(prev => {
+          const next = new Map(prev);
+          next.delete(sessionId);
+          return next;
+        });
+        setIsTypingPerSession(prev => {
+          const next = new Map(prev);
+          next.set(sessionId, false);
+          return next;
+        });
+        setShouldStreamPerSession(prev => {
+          const next = new Map(prev);
+          next.delete(sessionId);
+          return next;
+        });
+        setPendingMessages(prev => {
+          const next = new Map(prev);
+          next.delete(sessionId);
+          return next;
+        });
+        streamBuffers.current.delete(sessionId);
+        
+        // Refetch messages for the completed session
+        if (sessionId === currentSessionId) {
+          refetchMessages();
+        }
+      }, 100);
+    } else if (data.type === 'error') {
+      streamBuffers.current.delete(sessionId);
+      
+      setStreamingMessages(prev => {
+        const next = new Map(prev);
+        next.set(sessionId, data.content || 'An error occurred');
+        return next;
+      });
+      
+      setIsTypingPerSession(prev => {
+        const next = new Map(prev);
+        next.set(sessionId, false);
+        return next;
+      });
+      
+      setTimeout(() => {
+        setStreamingMessages(prev => {
+          const next = new Map(prev);
+          next.delete(sessionId);
+          return next;
+        });
+        setTempUserMessages(prev => {
+          const next = new Map(prev);
+          next.delete(sessionId);
+          return next;
+        });
+        setShouldStreamPerSession(prev => {
+          const next = new Map(prev);
+          next.delete(sessionId);
+          return next;
+        });
+        setPendingMessages(prev => {
+          const next = new Map(prev);
+          next.delete(sessionId);
+          return next;
+        });
+        
+        if (sessionId === currentSessionId) {
+          refetchMessages();
+        }
+      }, 2000);
+    }
+  }, [currentSessionId, refetchMessages, processStreamBuffer]);
+
+  // Handle stream error for a specific session
+  const handleStreamError = useCallback((sessionId: number) => {
+    streamBuffers.current.delete(sessionId);
+    
+    setIsTypingPerSession(prev => {
+      const next = new Map(prev);
+      next.set(sessionId, false);
+      return next;
+    });
+    
+    setStreamingMessages(prev => {
+      const next = new Map(prev);
+      next.delete(sessionId);
+      return next;
+    });
+    
+    setTempUserMessages(prev => {
+      const next = new Map(prev);
+      next.delete(sessionId);
+      return next;
+    });
+    
+    setShouldStreamPerSession(prev => {
+      const next = new Map(prev);
+      next.delete(sessionId);
+      return next;
+    });
+    
+    setPendingMessages(prev => {
+      const next = new Map(prev);
+      next.delete(sessionId);
+      return next;
+    });
+    
+    const processor = streamingProcessors.current.get(sessionId);
+    if (processor) {
+      processor.reset();
+      streamingProcessors.current.delete(sessionId);
+    }
+  }, []);
+
+  // Multiple streaming subscriptions - use fixed slots for concurrent sessions
+  // Maximum 5 concurrent streaming sessions supported
+  const activeSessions = Array.from(pendingMessages.entries());
+  const MAX_CONCURRENT_STREAMS = 5;
+
+  // Create fixed subscription slots
+  const subscriptionSlots = Array.from({ length: MAX_CONCURRENT_STREAMS }, (_, i) => {
+    const sessionEntry = activeSessions[i];
+    return sessionEntry ? sessionEntry[1] : null;
+  });
+
+  // Subscription slot 0
   trpc.chat.sendMessageStream.useSubscription(
-    pendingMessage!,
+    subscriptionSlots[0]!,
     {
-      enabled: shouldStream && !!pendingMessage,
-      onData: (data: StreamData) => {
-        if (data.type === 'chunk' && data.content) {
-          streamBufferRef.current.push(...data.content.split(''));
-          processStreamBuffer();
-        } else if (data.type === 'complete') {
-          if (streamBufferRef.current.length > 0) {
-            const remaining = streamBufferRef.current.join('');
-            if (streamingProcessorRef.current) {
-              streamingProcessorRef.current.addChunk(remaining);
-            }
-            streamBufferRef.current = [];
-          }
-          
-          if (streamingProcessorRef.current) {
-            streamingProcessorRef.current.complete();
-            streamingProcessorRef.current = null;
-          }
-          
-          setTimeout(() => {
-            setStreamingMessage('');
-            setTempUserMessage(null);
-            setIsTyping(false);
-            setShouldStream(false);
-            setPendingMessage(null);
-            refetchMessages();
-          }, 100);
-        } else if (data.type === 'error') {
-          streamBufferRef.current = [];
-          setStreamingMessage(data.content || 'An error occurred');
-          setIsTyping(false);
-          setTimeout(() => {
-            setStreamingMessage('');
-            setTempUserMessage(null);
-            setShouldStream(false);
-            setPendingMessage(null);
-            refetchMessages();
-          }, 2000);
-        }
-      },
-      onError: () => {
-        streamBufferRef.current = [];
-        setIsTyping(false);
-        setStreamingMessage('');
-        setTempUserMessage(null);
-        setShouldStream(false);
-        setPendingMessage(null);
-        if (streamingProcessorRef.current) {
-          streamingProcessorRef.current.reset();
-          streamingProcessorRef.current = null;
-        }
-      },
+      enabled: !!subscriptionSlots[0],
+      onData: handleStreamData,
+      onError: () => subscriptionSlots[0] && handleStreamError(subscriptionSlots[0].sessionId),
+    }
+  );
+
+  // Subscription slot 1
+  trpc.chat.sendMessageStream.useSubscription(
+    subscriptionSlots[1]!,
+    {
+      enabled: !!subscriptionSlots[1],
+      onData: handleStreamData,
+      onError: () => subscriptionSlots[1] && handleStreamError(subscriptionSlots[1].sessionId),
+    }
+  );
+
+  // Subscription slot 2
+  trpc.chat.sendMessageStream.useSubscription(
+    subscriptionSlots[2]!,
+    {
+      enabled: !!subscriptionSlots[2],
+      onData: handleStreamData,
+      onError: () => subscriptionSlots[2] && handleStreamError(subscriptionSlots[2].sessionId),
+    }
+  );
+
+  // Subscription slot 3
+  trpc.chat.sendMessageStream.useSubscription(
+    subscriptionSlots[3]!,
+    {
+      enabled: !!subscriptionSlots[3],
+      onData: handleStreamData,
+      onError: () => subscriptionSlots[3] && handleStreamError(subscriptionSlots[3].sessionId),
+    }
+  );
+
+  // Subscription slot 4
+  trpc.chat.sendMessageStream.useSubscription(
+    subscriptionSlots[4]!,
+    {
+      enabled: !!subscriptionSlots[4],
+      onData: handleStreamData,
+      onError: () => subscriptionSlots[4] && handleStreamError(subscriptionSlots[4].sessionId),
     }
   );
 
   const handleSendMessage = useCallback(() => {
-    if (!message.trim() || isTyping) return;
+    if (!message.trim()) return;
+    if (currentSessionId && isTypingPerSession.get(currentSessionId)) return;
 
     const userMessageContent = message;
     setMessage('');
-    setIsTyping(true);
-    setStreamingMessage('');
-    
-    setTempUserMessage({ 
-      content: userMessageContent, 
-      timestamp: new Date() 
-    });
 
     if (!currentSessionId) {
       createSessionWithMessageMutation.mutate({
@@ -237,18 +385,49 @@ export function useChat({ userId }: UseChatProps): UseChatReturn {
         firstMessage: userMessageContent,
       }, {
         onSuccess: (session) => {
-          setCurrentSessionId(session.id);
-          setPendingMessage({
-            sessionId: session.id,
-            content: userMessageContent,
-            userId,
+          const sessionId = session.id;
+          setCurrentSessionId(sessionId);
+          
+          // Initialize per-session state
+          setIsTypingPerSession(prev => {
+            const next = new Map(prev);
+            next.set(sessionId, true);
+            return next;
           });
-          setShouldStream(true);
+          
+          setStreamingMessages(prev => {
+            const next = new Map(prev);
+            next.set(sessionId, '');
+            return next;
+          });
+          
+          setTempUserMessages(prev => {
+            const next = new Map(prev);
+            next.set(sessionId, { content: userMessageContent, timestamp: new Date() });
+            return next;
+          });
+          
+          setPendingMessages(prev => {
+            const next = new Map(prev);
+            next.set(sessionId, {
+              sessionId: sessionId,
+              content: userMessageContent,
+              userId,
+            });
+            return next;
+          });
+          
+          setShouldStreamPerSession(prev => {
+            const next = new Map(prev);
+            next.set(sessionId, true);
+            return next;
+          });
+          
+          streamBuffers.current.set(sessionId, []);
+          
           refetchSessions();
         },
         onError: () => {
-          setIsTyping(false);
-          setTempUserMessage(null);
           setMessage(userMessageContent);
         }
       });
@@ -259,12 +438,42 @@ export function useChat({ userId }: UseChatProps): UseChatReturn {
         currentSession.title.startsWith('New Chat')
       );
       
-      setPendingMessage({
-        sessionId: currentSessionId,
-        content: userMessageContent,
-        userId,
+      // Initialize per-session state
+      setIsTypingPerSession(prev => {
+        const next = new Map(prev);
+        next.set(currentSessionId, true);
+        return next;
       });
-      setShouldStream(true);
+      
+      setStreamingMessages(prev => {
+        const next = new Map(prev);
+        next.set(currentSessionId, '');
+        return next;
+      });
+      
+      setTempUserMessages(prev => {
+        const next = new Map(prev);
+        next.set(currentSessionId, { content: userMessageContent, timestamp: new Date() });
+        return next;
+      });
+      
+      setPendingMessages(prev => {
+        const next = new Map(prev);
+        next.set(currentSessionId, {
+          sessionId: currentSessionId,
+          content: userMessageContent,
+          userId,
+        });
+        return next;
+      });
+      
+      setShouldStreamPerSession(prev => {
+        const next = new Map(prev);
+        next.set(currentSessionId, true);
+        return next;
+      });
+      
+      streamBuffers.current.set(currentSessionId, []);
       
       if (isFirstMessage) {
         setTimeout(() => {
@@ -275,21 +484,51 @@ export function useChat({ userId }: UseChatProps): UseChatReturn {
         }, 1000);
       }
     }
-  }, [message, isTyping, currentSessionId, userId, sessions, createSessionWithMessageMutation, updateSessionTitleMutation, refetchSessions]);
+  }, [message, currentSessionId, userId, sessions, isTypingPerSession, createSessionWithMessageMutation, updateSessionTitleMutation, refetchSessions]);
 
   const handleStopResponse = useCallback(() => {
-    if (streamingProcessorRef.current) {
-      streamingProcessorRef.current.reset();
-      streamingProcessorRef.current = null;
+    if (!currentSessionId) return;
+    
+    const processor = streamingProcessors.current.get(currentSessionId);
+    if (processor) {
+      processor.reset();
+      streamingProcessors.current.delete(currentSessionId);
     }
     
-    setIsTyping(false);
-    setStreamingMessage('');
-    setTempUserMessage(null);
-    setShouldStream(false);
-    setPendingMessage(null);
+    setIsTypingPerSession(prev => {
+      const next = new Map(prev);
+      next.set(currentSessionId, false);
+      return next;
+    });
+    
+    setStreamingMessages(prev => {
+      const next = new Map(prev);
+      next.delete(currentSessionId);
+      return next;
+    });
+    
+    setTempUserMessages(prev => {
+      const next = new Map(prev);
+      next.delete(currentSessionId);
+      return next;
+    });
+    
+    setShouldStreamPerSession(prev => {
+      const next = new Map(prev);
+      next.delete(currentSessionId);
+      return next;
+    });
+    
+    setPendingMessages(prev => {
+      const next = new Map(prev);
+      next.delete(currentSessionId);
+      return next;
+    });
+    
+    streamBuffers.current.delete(currentSessionId);
+    
     refetchMessages();
-  }, [refetchMessages]);
+  }, [currentSessionId, refetchMessages]);
 
   const handleSelectQuickPrompt = useCallback((prompt: string, onStartNewChat?: () => void) => {
     if (onStartNewChat) {
@@ -306,15 +545,12 @@ export function useChat({ userId }: UseChatProps): UseChatReturn {
     isTyping,
     streamingMessage,
     tempUserMessage,
-    shouldStream,
-    pendingMessage,
+    activeStreamingSessions,
     sessions,
     messages,
     handleSendMessage,
     handleStopResponse,
     handleSelectQuickPrompt,
-    streamBufferRef,
-    streamingProcessorRef,
   };
 }
 

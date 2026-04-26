@@ -44,6 +44,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
     isTyping,
     streamingMessage,
     tempUserMessage,
+    activeStreamingSessions,
     sessions,
     messages,
     handleSendMessage,
@@ -140,6 +141,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
         accentColor={accentColor}
         userName={session?.user?.name}
         userImage={session?.user?.image}
+        activeStreamingSessions={activeStreamingSessions}
         onSessionSelect={setCurrentSessionId}
         onCreateSession={handleNewChat}
         onDeleteSession={handleDeleteSession}
