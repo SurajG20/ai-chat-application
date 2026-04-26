@@ -1,27 +1,20 @@
 import type { Metadata } from "next";
-import { Anton, Space_Grotesk, Space_Mono } from "next/font/google";
+import { Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { TRPCProvider } from "../providers/trpc-provider";
 import { AuthSessionProvider } from "../providers/session-provider";
 
-const anton = Anton({
-  variable: "--font-anton",
-  weight: ["400"],
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  display: "swap",
-});
-
-const spaceMono = Space_Mono({
-  variable: "--font-space-mono",
-  subsets: ["latin"],
-  weight: ["400", "700"],
+  weight: ["400", "500", "600"],
   display: "swap",
 });
 
@@ -38,7 +31,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${anton.variable} ${spaceGrotesk.variable} ${spaceMono.variable} antialiased`}
+        className={`${inter.variable} ${geistMono.variable} antialiased`}
       >
         <AuthSessionProvider>
           <TRPCProvider>

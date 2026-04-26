@@ -57,7 +57,7 @@ export const MessageBubble = memo(function MessageBubble({
     <div className={`flex gap-2 lg:gap-3 ${isUser ? 'justify-end' : 'justify-start'}`}>
       {!isUser && (
         <Avatar className="w-8 h-8 flex-shrink-0">
-          <AvatarFallback className="text-black" style={{ backgroundColor: accentColor }}>
+          <AvatarFallback className="text-primary-foreground" style={{ backgroundColor: accentColor }}>
             <Bot className="h-4 w-4" />
           </AvatarFallback>
         </Avatar>
@@ -65,36 +65,36 @@ export const MessageBubble = memo(function MessageBubble({
       
       <div className={`flex flex-col gap-1 max-w-[80%] ${isUser ? 'items-end' : 'items-start'}`}>
         <Card 
-          className={`${isUser ? 'text-black' : 'bg-[#131313] border-white'} rounded-[20px]`}
+          className={`${isUser ? 'text-primary-foreground border-none' : 'bg-muted/50 border-border'} rounded-xl`}
           style={isUser ? { backgroundColor: accentColor } : undefined}
         >
-          <CardContent className="px-3 py-2">
+          <CardContent className="px-4 py-3">
             <MessageContent content={message.content} role={message.role} />
           </CardContent>
         </Card>
         
         {!isUser ? (
           <div className="flex items-center justify-between w-full px-1">
-            <p className="label-mono-sm text-[#949494] text-xs">{timestamp}</p>
+            <p className="text-xs text-muted-foreground">{timestamp}</p>
             <Button
               variant="ghost"
               size="sm"
-              className="opacity-70 hover:opacity-100 transition-opacity p-1 h-auto text-[#949494] hover:text-white"
+              className="opacity-70 hover:opacity-100 transition-opacity p-1 h-auto text-xs text-muted-foreground hover:text-foreground"
               onClick={handleCopy}
               title="Copy message"
             >
               <Copy className="w-3 h-3 mr-1" />
-              <span className="text-xs label-mono-sm">COPY</span>
+              <span>Copy</span>
             </Button>
           </div>
         ) : (
-          <p className="label-mono-sm text-[#949494] text-xs px-1">{timestamp}</p>
+          <p className="text-xs text-muted-foreground px-1">{timestamp}</p>
         )}
       </div>
 
       {isUser && (
         <Avatar className="w-8 h-8 flex-shrink-0">
-          <AvatarFallback className="bg-[#5200ff] text-white">
+          <AvatarFallback className="bg-secondary text-secondary-foreground">
             <User className="h-4 w-4" />
           </AvatarFallback>
         </Avatar>
@@ -122,7 +122,7 @@ export const TypingIndicator = memo(function TypingIndicator({
           style={{ animationDelay: '0.4s', backgroundColor: accentColor }}
         />
       </div>
-      <p className="text-xs text-[#949494] label-mono-sm">AI is thinking...</p>
+      <p className="text-xs text-muted-foreground">AI is thinking...</p>
     </div>
   );
 });

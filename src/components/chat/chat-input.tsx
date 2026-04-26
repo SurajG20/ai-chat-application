@@ -37,30 +37,30 @@ export const ChatInput = memo(function ChatInput({
     : placeholder;
 
   return (
-    <div className="flex-shrink-0 border-t border-white p-4 lg:p-6 bg-[#131313]">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex gap-2">
+    <div className="flex-shrink-0 border-t border-border p-4 lg:p-6 bg-background">
+      <div className="max-w-4xl mx-auto">
+        <div className="flex gap-3">
           <Input
             type="text"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder={activePlaceholder}
-            className="flex-1 text-sm lg:text-base bg-[#2d2d2d] border-white text-white placeholder:text-[#949494] rounded-[4px]"
+            className="flex-1 h-11 text-base bg-muted/50 border-border text-foreground placeholder:text-muted-foreground rounded-lg focus-visible:ring-primary"
           />
           <Button
             onClick={isTyping ? onStopResponse : onSendMessage}
             disabled={!message.trim() && !isTyping}
             size="icon"
-            className="shrink-0 text-black rounded-full border-none"
+            className="shrink-0 h-11 w-11 text-primary-foreground rounded-lg border-none hover:opacity-90 transition-opacity"
             style={{ backgroundColor: accentColor }}
             title={isTyping ? "Stop response" : "Send message"}
           >
             {isTyping ? <Square className="w-4 h-4" /> : <Send className="w-4 h-4" />}
           </Button>
         </div>
-        <p className="label-mono-sm text-[#949494] text-xs mt-2 text-center hidden lg:block">
-          PRESS ENTER TO SEND, SHIFT+ENTER FOR NEW LINE
+        <p className="text-xs text-muted-foreground mt-2 text-center hidden lg:block">
+          Press <kbd className="px-1.5 py-0.5 rounded bg-muted font-mono text-xs">Enter</kbd> to send, <kbd className="px-1.5 py-0.5 rounded bg-muted font-mono text-xs">Shift</kbd> + <kbd className="px-1.5 py-0.5 rounded bg-muted font-mono text-xs">Enter</kbd> for new line
         </p>
       </div>
     </div>

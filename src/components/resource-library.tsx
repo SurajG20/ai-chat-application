@@ -1,6 +1,6 @@
 'use client';
 
-import { BookOpen, ExternalLink, Star, Clock, Filter } from 'lucide-react';
+import { BookOpen, ExternalLink, Star, Clock, Filter, X } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { useState } from 'react';
@@ -114,7 +114,7 @@ export function ResourceLibrary({ isOpen = false, onToggle, accentColor = '#3cff
         variant="ghost"
         size="sm"
         onClick={onToggle}
-        className="text-[#949494] hover:text-white p-2 h-auto"
+        className="text-muted-foreground hover:text-foreground p-2 h-auto"
         title="Resource Library"
       >
         <BookOpen className="w-4 h-4" />
@@ -124,25 +124,27 @@ export function ResourceLibrary({ isOpen = false, onToggle, accentColor = '#3cff
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <Card className="bg-[#131313] border-white rounded-[24px] max-w-4xl w-full max-h-[80vh] overflow-hidden">
+      <Card className="bg-card border-border rounded-xl max-w-4xl w-full max-h-[80vh] overflow-hidden shadow-2xl">
         <CardContent className="p-6">
           <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2">
-              <BookOpen className="w-5 h-5" style={{ color: accentColor }} />
-              <h2 className="text-xl font-display text-white">RESOURCE LIBRARY</h2>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${accentColor}15` }}>
+                <BookOpen className="w-4 h-4" style={{ color: accentColor }} />
+              </div>
+              <h2 className="text-xl font-display text-foreground tracking-tight">Resource Library</h2>
             </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={onToggle}
-              className="text-[#949494] hover:text-white"
+              className="text-muted-foreground hover:text-foreground"
             >
-              ✕
+              <X className="w-4 h-4" />
             </Button>
           </div>
 
           <div className="flex flex-wrap items-center gap-3 mb-6">
-            <Filter className="w-4 h-4 text-[#949494]" />
+            <Filter className="w-4 h-4 text-muted-foreground" />
             <div className="flex flex-wrap gap-2">
               {categories.map((category) => (
                 <Button
@@ -152,8 +154,8 @@ export function ResourceLibrary({ isOpen = false, onToggle, accentColor = '#3cff
                   onClick={() => setSelectedCategory(category)}
                   className={
                     selectedCategory === category
-                      ? 'text-black border-none'
-                      : 'bg-transparent border-white/30 text-white hover:bg-white/10'
+                      ? 'text-primary-foreground border-none hover:opacity-90'
+                      : 'bg-transparent border-border text-foreground hover:bg-muted'
                   }
                   style={selectedCategory === category ? { backgroundColor: accentColor } : undefined}
                 >
@@ -167,8 +169,8 @@ export function ResourceLibrary({ isOpen = false, onToggle, accentColor = '#3cff
               onClick={() => setShowFeaturedOnly(!showFeaturedOnly)}
               className={`ml-auto ${
                 showFeaturedOnly
-                  ? 'text-black border-none'
-                  : 'bg-transparent border-white/30 text-white hover:bg-white/10'
+                  ? 'text-primary-foreground border-none hover:opacity-90'
+                  : 'bg-transparent border-border text-foreground hover:bg-muted'
               }`}
               style={showFeaturedOnly ? { backgroundColor: accentColor } : undefined}
             >
@@ -181,8 +183,7 @@ export function ResourceLibrary({ isOpen = false, onToggle, accentColor = '#3cff
             {filteredResources.map((resource) => (
               <Card
                 key={resource.id}
-                className="bg-[#2d2d2d] border-white/20 hover:bg-[#3cffd0]/10 transition-all duration-200"
-                style={{ borderColor: accentColor }}
+                className="bg-muted/30 border-border hover:border-primary/30 hover:shadow-md transition-all duration-200"
               >
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between gap-4">
@@ -191,20 +192,20 @@ export function ResourceLibrary({ isOpen = false, onToggle, accentColor = '#3cff
                         {resource.featured && (
                           <Star className="w-3 h-3" style={{ color: accentColor, fill: accentColor }} />
                         )}
-                        <span className="text-xs text-[#949494] label-mono-sm">{resource.category}</span>
-                        <span className="text-xs text-[#949494] flex items-center gap-1">
+                        <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{resource.category}</span>
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
                           <Clock className="w-3 h-3" />
                           {resource.readTime}
                         </span>
                       </div>
-                      <h3 className="text-sm font-medium text-white mb-1">{resource.title}</h3>
-                      <p className="text-xs text-[#949494] line-clamp-2">{resource.description}</p>
+                      <h3 className="text-sm font-medium text-foreground mb-1">{resource.title}</h3>
+                      <p className="text-xs text-muted-foreground line-clamp-2">{resource.description}</p>
                     </div>
                     <Button
                       variant="ghost"
                       size="sm"
                       asChild
-                      className="shrink-0 text-[#3cffd0] hover:text-white"
+                      className="shrink-0 text-primary hover:text-foreground"
                     >
                       <a
                         href={resource.url}
@@ -221,8 +222,8 @@ export function ResourceLibrary({ isOpen = false, onToggle, accentColor = '#3cff
             ))}
           </div>
 
-          <div className="mt-4 pt-4 border-t border-white/20 text-center">
-            <p className="text-xs text-[#949494]">
+          <div className="mt-4 pt-4 border-t border-border text-center">
+            <p className="text-xs text-muted-foreground">
               Showing {filteredResources.length} of {resources.length} resources
             </p>
           </div>

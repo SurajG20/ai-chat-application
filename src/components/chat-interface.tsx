@@ -131,7 +131,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
   }, [deleteSession]);
 
   return (
-    <div className="flex h-screen bg-[#131313]" data-accent-color={accentColor}>
+    <div className="flex h-screen bg-background" data-accent-color={accentColor}>
       {/* Sidebar */}
       <ChatSidebar
         sessions={sessions}
@@ -150,7 +150,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
       />
 
       {/* Main content */}
-      <div className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ml-0 ${sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-72'} overflow-hidden`}>
+      <div className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ml-0 ${sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-72'} overflow-hidden border-l border-border`}>
         {/* Headers */}
         <ChatHeader
           sessions={sessions}

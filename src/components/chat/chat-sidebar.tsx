@@ -45,10 +45,9 @@ const SessionItem = memo(function SessionItem({
 }) {
   return (
     <div
-      className={`cursor-pointer transition-all duration-200 rounded-[20px] p-2 mx-1 ${
-        isActive ? 'border' : 'hover:bg-[#2d2d2d]'
+      className={`cursor-pointer transition-all duration-200 rounded-lg p-2 mx-1 ${
+        isActive ? 'bg-primary/10 border border-primary/50' : 'hover:bg-muted'
       }`}
-      style={isActive ? { backgroundColor: `${accentColor}10`, borderColor: accentColor } : undefined}
       onClick={onSelect}
       title={isCollapsed ? session.title : undefined}
     >
@@ -59,25 +58,25 @@ const SessionItem = memo(function SessionItem({
               className="w-8 h-8 rounded-full flex items-center justify-center" 
               style={{ backgroundColor: accentColor }}
             >
-              <span className="text-xs font-medium text-black">
+              <span className="text-xs font-medium text-primary-foreground">
                 {session.title.charAt(0).toUpperCase()}
               </span>
             </div>
             {isStreaming && (
               <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: accentColor }}></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-background border border-border"></span>
               </span>
             )}
           </div>
         ) : (
           <>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">
+              <p className="text-sm font-medium text-foreground truncate">
                 {session.title}
               </p>
               <div className="flex items-center gap-2">
-                <p className="label-mono-sm text-[#949494] text-xs">
+                <p className="text-xs text-muted-foreground">
                   {new Date(session.updatedAt).toLocaleDateString()}
                 </p>
                 {isStreaming && (
@@ -86,7 +85,7 @@ const SessionItem = memo(function SessionItem({
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: accentColor }}></span>
                       <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: accentColor }}></span>
                     </span>
-                    <span className="label-mono-sm">typing...</span>
+                    <span className="text-xs">typing...</span>
                   </span>
                 )}
               </div>
@@ -95,7 +94,7 @@ const SessionItem = memo(function SessionItem({
               variant="ghost"
               size="sm"
               onClick={onDelete}
-              className="text-[#949494] hover:text-[#5200ff] p-1 h-auto ml-1"
+              className="text-muted-foreground hover:text-destructive p-1 h-auto ml-1 opacity-0 group-hover:opacity-100 transition-opacity"
             >
               <Trash2 className="w-3 h-3" />
             </Button>
@@ -142,18 +141,18 @@ export const ChatSidebar = memo(function ChatSidebar({
       )}
       
       {/* Sidebar */}
-      <div className={`${isCollapsed ? 'w-16' : 'w-72'} bg-[#131313] border-r border-white flex flex-col fixed inset-y-0 left-0 z-50 lg:z-auto transform ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} transition-all duration-300 ease-in-out`}>
+      <div className={`${isCollapsed ? 'w-16' : 'w-72'} bg-sidebar border-r border-sidebar-border flex flex-col fixed inset-y-0 left-0 z-50 lg:z-auto transform ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} transition-all duration-300 ease-in-out`}>
         {/* Header */}
-        <div className="flex-shrink-0 p-4 border-b border-white">
+        <div className="flex-shrink-0 p-4 border-b border-sidebar-border">
           <div className="flex items-center justify-between mb-4 lg:hidden">
-            <CardTitle className="text-lg font-semibold text-white label-mono-sm">
-              CHAT HISTORY
+            <CardTitle className="text-sm font-semibold text-sidebar-foreground">
+              Chat History
             </CardTitle>
             <Button
               variant="ghost"
               size="sm"
               onClick={onCloseMobileSidebar}
-              className="p-2 text-white hover:text-[#3860be]"
+              className="p-2 text-sidebar-foreground hover:text-primary"
             >
               <X className="w-4 h-4" />
             </Button>
@@ -161,20 +160,20 @@ export const ChatSidebar = memo(function ChatSidebar({
           
           <div className="hidden lg:flex items-center justify-between mb-4">
             {!isCollapsed && (
-              <CardTitle className="text-lg font-semibold text-white label-mono-sm">
-                CHAT HISTORY
+              <CardTitle className="text-sm font-semibold text-sidebar-foreground">
+                Chat History
               </CardTitle>
             )}
           </div>
           
           <Button
-            className={`w-full text-black rounded-full border-none label-mono ${isCollapsed ? 'px-2' : ''}`}
+            className={`w-full text-primary-foreground rounded-lg hover:opacity-90 transition-opacity ${isCollapsed ? 'px-2' : ''}`}
             style={{ backgroundColor: accentColor }}
-            size={isCollapsed ? "icon" : "lg"}
+            size={isCollapsed ? "icon" : "default"}
             onClick={onCreateSession}
           >
             <Plus className="w-4 h-4" />
-            {!isCollapsed && <span className="ml-2">NEW CHAT</span>}
+            {!isCollapsed && <span className="ml-2">New Chat</span>}
           </Button>
         </div>
 
@@ -183,8 +182,8 @@ export const ChatSidebar = memo(function ChatSidebar({
           <ScrollArea className="h-full">
             <div className="p-2 space-y-1">
               {!isCollapsed && (
-                <h3 className="label-mono-sm text-[#949494] text-xs mb-2 px-2">
-                  RECENT CHATS
+                <h3 className="text-xs font-medium text-muted-foreground mb-2 px-2 uppercase tracking-wider">
+                  Recent Chats
                 </h3>
               )}
               {sessions?.map((session) => (
@@ -204,12 +203,12 @@ export const ChatSidebar = memo(function ChatSidebar({
         </div>
 
         {/* User profile */}
-        <div className="flex-shrink-0 p-3 border-t border-white">
+        <div className="flex-shrink-0 p-3 border-t border-sidebar-border">
           <div className="flex items-center gap-2">
-            <Avatar className="w-7 h-7">
+            <Avatar className="w-8 h-8">
               <AvatarImage src={userImage || ''} />
               <AvatarFallback 
-                className="text-black text-xs" 
+                className="text-xs text-primary-foreground" 
                 style={{ backgroundColor: accentColor }}
               >
                 {userName?.charAt(0) || <User className="h-3 w-3" />}
@@ -218,15 +217,15 @@ export const ChatSidebar = memo(function ChatSidebar({
             {!isCollapsed && (
               <>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-white truncate">
+                  <p className="text-sm font-medium text-sidebar-foreground truncate">
                     {userName}
                   </p>
-                  <p className="label-mono-sm text-[#949494] text-xs">CAREER SEEKER</p>
+                  <p className="text-xs text-muted-foreground">Career Seeker</p>
                 </div>
                 <LogoutConfirmation
                   variant="ghost"
                   size="sm"
-                  className="text-[#949494] hover:text-white p-1 h-auto"
+                  className="text-muted-foreground hover:text-sidebar-foreground p-1 h-auto"
                 />
               </>
             )}

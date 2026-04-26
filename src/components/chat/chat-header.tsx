@@ -34,27 +34,27 @@ export const ChatHeader = memo(function ChatHeader({
 
   if (isMobile) {
     return (
-      <div className="lg:hidden bg-[#131313] border-b border-white px-4 py-3 flex items-center justify-between">
+      <div className="lg:hidden bg-background border-b border-border px-4 py-3 flex items-center justify-between">
         <Button
           variant="ghost"
           size="sm"
           onClick={onToggleSidebar}
-          className="p-2 text-white hover:text-[#3860be]"
+          className="p-2 text-foreground hover:text-primary"
         >
           <Menu className="w-5 h-5" />
         </Button>
         <div className="flex items-center gap-2">
           <div 
-            className="w-6 h-6 rounded-lg flex items-center justify-center" 
+            className="w-7 h-7 rounded-lg flex items-center justify-center" 
             style={{ backgroundColor: accentColor }}
           >
-            <Heart className="h-3 w-3 text-black" />
+            <Heart className="h-3.5 w-3.5 text-primary-foreground" />
           </div>
-          <h2 className="font-display text-lg text-white truncate max-w-[200px]">
+          <h2 className="font-display text-base text-foreground truncate max-w-[200px]">
             {title}
           </h2>
         </div>
-        <div className="w-9 flex justify-end gap-1">
+        <div className="flex items-center gap-1">
           <ResourceLibrary
             isOpen={resourceLibraryOpen}
             onToggle={onToggleResourceLibrary}
@@ -68,29 +68,29 @@ export const ChatHeader = memo(function ChatHeader({
   }
 
   return (
-    <div className="hidden lg:flex bg-[#131313] border-b border-white px-6 py-4 items-center justify-between relative z-10">
-      <div className="flex items-center gap-4">
+    <div className="hidden lg:flex bg-background border-b border-border px-6 py-3 items-center justify-between relative z-10">
+      <div className="flex items-center gap-3">
         <Button
           variant="ghost"
           size="sm"
           onClick={onToggleSidebar}
-          className="p-2 text-white hover:text-[#3860be]"
+          className="p-2 text-foreground hover:text-primary"
         >
           <Menu className="w-5 h-5" />
         </Button>
         <div className="flex items-center gap-2">
           <div 
-            className="w-6 h-6 rounded-lg flex items-center justify-center" 
+            className="w-6 h-6 rounded-md flex items-center justify-center" 
             style={{ backgroundColor: accentColor }}
           >
-            <Heart className="h-3 w-3 text-black" />
+            <Heart className="h-3 w-3 text-primary-foreground" />
           </div>
-          <h2 className="font-display text-lg text-white">
+          <h2 className="font-display text-base text-foreground">
             {title}
           </h2>
         </div>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1">
         <ResourceLibrary
           isOpen={resourceLibraryOpen}
           onToggle={onToggleResourceLibrary}

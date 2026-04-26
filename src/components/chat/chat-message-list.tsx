@@ -37,33 +37,33 @@ const StreamingMessage = memo(function StreamingMessage({
   return (
     <div className="flex gap-3 justify-start message-fade-in">
       <Avatar className="w-8 h-8 flex-shrink-0">
-        <AvatarFallback className="text-black" style={{ backgroundColor: accentColor }}>
+        <AvatarFallback className="text-primary-foreground" style={{ backgroundColor: accentColor }}>
           <Bot className="h-4 w-4" />
         </AvatarFallback>
       </Avatar>
-      <Card className="bg-[#131313] border-white rounded-[20px] max-w-[80%] gpu-accelerated">
-        <CardContent className="px-3 py-2">
+      <Card className="bg-muted/50 border-border rounded-xl max-w-[80%] gpu-accelerated">
+        <CardContent className="px-4 py-3">
           <div 
             className="text-sm whitespace-pre-wrap leading-relaxed streaming-text message-content"
             dangerouslySetInnerHTML={{ __html: formatMessageContent(content) }}
           />
         </CardContent>
-        <div className="flex items-center justify-between w-full px-1 pt-1">
-          <p className="label-mono-sm text-[#949494] text-xs flex items-center gap-1">
+        <div className="flex items-center justify-between w-full px-4 pb-3 pt-1">
+          <p className="text-xs text-muted-foreground flex items-center gap-1.5">
             <span 
               className="w-1.5 h-1.5 rounded-full animate-pulse" 
               style={{ backgroundColor: accentColor }}
             />
-            STREAMING...
+            Streaming...
           </p>
           <Button
             variant="ghost"
             size="sm"
-            className="opacity-70 hover:opacity-100 transition-opacity p-1 h-auto text-[#949494] hover:text-white"
+            className="opacity-70 hover:opacity-100 transition-opacity p-1 h-auto text-xs text-muted-foreground hover:text-foreground"
             onClick={onCopy}
             title="Copy streaming message"
           >
-            COPY
+            Copy
           </Button>
         </div>
       </Card>
@@ -128,16 +128,16 @@ export const ChatMessageList = memo(function ChatMessageList({
             <div className="flex gap-2 lg:gap-3 justify-end message-fade-in">
               <div className="flex flex-col gap-1 max-w-[80%] items-end">
                 <Card 
-                  className="text-black rounded-[20px] gpu-accelerated" 
+                  className="text-primary-foreground rounded-xl gpu-accelerated border-none" 
                   style={{ backgroundColor: accentColor }}
                 >
-                  <CardContent className="px-2 py-1">
+                  <CardContent className="px-4 py-2">
                     <p className="text-sm whitespace-pre-wrap leading-relaxed">
                       {tempUserMessage.content}
                     </p>
                   </CardContent>
                 </Card>
-                <p className="label-mono-sm text-[#949494] text-xs px-1">
+                <p className="text-xs text-muted-foreground px-1">
                   {tempUserMessage.timestamp.toLocaleTimeString()}
                 </p>
               </div>
@@ -155,12 +155,12 @@ export const ChatMessageList = memo(function ChatMessageList({
           {isTyping && !streamingMessage && (
             <div className="flex gap-3 justify-start message-fade-in">
               <Avatar className="w-8 h-8 flex-shrink-0">
-                <AvatarFallback className="text-black" style={{ backgroundColor: accentColor }}>
+                <AvatarFallback className="text-primary-foreground" style={{ backgroundColor: accentColor }}>
                   <Bot className="h-4 w-4" />
                 </AvatarFallback>
               </Avatar>
-              <Card className="bg-[#131313] border-white rounded-[20px] max-w-[80%] gpu-accelerated">
-                <CardContent className="px-3 py-2">
+              <Card className="bg-muted/50 border-border rounded-xl max-w-[80%] gpu-accelerated">
+                <CardContent className="px-4 py-3">
                   <TypingIndicator accentColor={accentColor} />
                 </CardContent>
               </Card>
@@ -176,7 +176,7 @@ export const ChatMessageList = memo(function ChatMessageList({
         <Button
           onClick={onScrollToBottom}
           size="icon"
-          className="absolute bottom-4 right-4 z-10 rounded-full text-black"
+          className="absolute bottom-4 right-4 z-10 rounded-full text-primary-foreground shadow-lg hover:opacity-90 transition-opacity"
           style={{ backgroundColor: accentColor }}
           aria-label="Scroll to bottom"
         >

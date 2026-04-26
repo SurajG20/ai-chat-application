@@ -17,7 +17,8 @@ import {
   TrendingUp,
   Heart,
   Menu,
-  X
+  X,
+  Sparkles
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -82,36 +83,33 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#131313]">
+    <div className="min-h-screen bg-background">
       {/* Navigation - Only show when not logged in */}
       {!session && (
-        <nav className="sticky top-0 z-50 bg-[#131313] border-b border-white">
-        <div className="max-w-[1280px] mx-auto px-6">
+        <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Logo - Verge-style wordmark */}
+            {/* Logo */}
             <div className="flex items-center space-x-3">
               <div className="hidden sm:block">
-                <span className="font-display text-2xl sm:text-3xl text-white tracking-wide" style={{ lineHeight: 0.95 }}>CareerPath AI</span>
+                <span className="font-display text-xl sm:text-2xl text-foreground tracking-tight">CareerPath AI</span>
               </div>
               <div className="sm:hidden">
-                <span className="font-display text-xl text-white tracking-wide" style={{ lineHeight: 0.95 }}>CareerPath AI</span>
+                <span className="font-display text-lg text-foreground tracking-tight">CareerPath AI</span>
               </div>
             </div>
 
             {/* Desktop Navigation Links - Only show when not logged in */}
             {!session && (
-              <div className="hidden md:flex items-center space-x-8">
-                <a href="#services" className="label-mono-sm text-white text-xs">
+              <div className="hidden md:flex items-center space-x-6">
+                <a href="#services" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Services
                 </a>
-                <a href="#features" className="label-mono-sm text-white text-xs">
+                <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Features
                 </a>
-                <a href="#testimonials" className="label-mono-sm text-white text-xs">
+                <a href="#testimonials" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Success Stories
-                </a>
-                <a href="#about" className="label-mono-sm text-white text-xs">
-                  About
                 </a>
           </div>
             )}
@@ -124,7 +122,7 @@ export default function Home() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="md:hidden p-2 text-white hover:text-[#3860be]"
+                  className="md:hidden p-2 text-foreground hover:text-primary"
                   onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 >
                   {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
@@ -135,35 +133,28 @@ export default function Home() {
 
           {/* Mobile Navigation Menu - Only show when not logged in */}
           {!session && isMobileMenuOpen && (
-            <div className="md:hidden border-t border-white bg-[#131313]">
-              <div className="px-4 py-3 space-y-2">
+            <div className="md:hidden border-t border-border bg-background">
+              <div className="px-4 py-3 space-y-1">
                 <a 
                   href="#services" 
-                  className="block px-3 py-3 label-mono-sm text-white text-xs"
+                  className="block px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Services
                 </a>
                 <a 
                   href="#features" 
-                  className="block px-3 py-3 label-mono-sm text-white text-xs"
+                  className="block px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Features
                 </a>
                 <a 
                   href="#testimonials" 
-                  className="block px-3 py-3 label-mono-sm text-white text-xs"
+                  className="block px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   Success Stories
-                </a>
-                <a 
-                  href="#about" 
-                  className="block px-3 py-3 label-mono-sm text-white text-xs"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  About
                 </a>
               </div>
             </div>
@@ -175,18 +166,18 @@ export default function Home() {
       {status === 'loading' ? (
         <div className="flex items-center justify-center h-96">
           <div className="text-center">
-            <div className="w-8 h-8 border-4 border-[#3cffd0] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-[#949494]">Loading...</p>
+            <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading...</p>
           </div>
         </div>
       ) : session ? (
-        <div className="max-w-[1280px] mx-auto px-6">
-          <section className="py-20 text-center">
-            <div className="max-w-3xl mx-auto">
-              <h2 className="font-display text-5xl sm:text-6xl text-white mb-4" style={{ lineHeight: 0.95 }}>Welcome back</h2>
-              <p className="text-lg text-[#949494] mb-8">Continue your conversations and get guidance tailored to you.</p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <section className="py-24 text-center">
+            <div className="max-w-2xl mx-auto">
+              <h2 className="font-display text-4xl sm:text-5xl text-foreground mb-4 tracking-tight">Welcome back</h2>
+              <p className="text-lg text-muted-foreground mb-8">Continue your conversations and get guidance tailored to you.</p>
               <Link href="/chat">
-                <Button size="lg" className="text-lg px-8 py-6 bg-[#3cffd0] text-black rounded-full hover:bg-[rgba(255,255,255,0.2)] border-none">
+                <Button size="lg" className="text-base px-8 py-6 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity">
                   Go to Chat
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
@@ -195,52 +186,61 @@ export default function Home() {
           </section>
         </div>
       ) : (
-        <div className="max-w-[1280px] mx-auto px-6">
-          {/* Hero Section - Verge-style massive wordmark */}
-          <section className="py-16 md:py-24 text-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Hero Section */}
+          <section className="py-20 md:py-32 text-center">
             <div className="max-w-4xl mx-auto">
-              <div className="label-mono text-[#3cffd0] text-xs mb-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
+                <Sparkles className="w-4 h-4" />
                 AI-POWERED CAREER GUIDANCE
               </div>
-              <h1 className="font-display text-5xl md:text-7xl lg:text-[90px] text-white mb-4" style={{ lineHeight: 0.85, letterSpacing: '0.05px' }}>
-                Transform Your<br />
-                <span className="text-[#3cffd0]">Career Journey</span>
+              <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-foreground mb-6 tracking-tight leading-[1.1]">
+                Transform Your
+                <span className="text-primary block mt-2">Career Journey</span>
               </h1>
-              <p className="text-sm md:text-base text-[#949494] mb-6 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-base md:text-lg text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
                 Get personalized career counseling, skill assessments, and strategic guidance from our advanced AI counselor. 
                 Discover your potential and unlock new opportunities.
               </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/auth/signin">  
-                <Button size="default" className="text-sm px-6 py-3 bg-[#3cffd0] text-black rounded-full hover:bg-[rgba(255,255,255,0.2)] border-none label-mono">
-                  START YOUR JOURNEY
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                <Button size="lg" className="text-base px-8 py-6 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity">
+                  Start Your Journey
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+                </Link>
+                <Link href="#services">
+                <Button variant="outline" size="lg" className="text-base px-8 py-6 rounded-lg">
+                  Learn More
                 </Button>
                 </Link>
               </div>
             </div>
           </section>
 
-          {/* Features Section - StoryStream style tiles with glass effect */}
-          <section id="services" className="py-16">
+          {/* Features Section */}
+          <section id="services" className="py-20">
             <div className="text-center mb-12">
-              <div className="label-mono text-[#3cffd0] text-xs mb-3">WHY CHOOSE CAREERPATH AI?</div>
-              <h2 className="font-display text-3xl md:text-4xl text-white mb-3" style={{ lineHeight: 0.95 }}>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
+                <Target className="w-4 h-4" />
+                WHY CHOOSE CAREERPATH AI?
+              </div>
+              <h2 className="font-display text-3xl md:text-4xl text-foreground mb-4 tracking-tight">
                 Comprehensive Career Guidance
               </h2>
-              <p className="text-sm text-[#949494] max-w-2xl mx-auto">
+              <p className="text-base text-muted-foreground max-w-2xl mx-auto">
                 Our comprehensive platform combines cutting-edge AI technology with proven career counseling methodologies.
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {services.map((service, index) => (
-                <Card key={index} className="text-center bg-[#131313]/80 backdrop-blur-sm border border-white/30 rounded-[20px] p-5 hover:border-[#3cffd0] transition-all duration-150 hover:bg-[#131313]/90">
-                  <div className="mx-auto w-12 h-12 bg-[#3cffd0] rounded-full flex items-center justify-center text-black mb-3">
+                <Card key={index} className="text-center bg-card border border-border rounded-xl p-6 hover:border-primary/50 hover:shadow-lg transition-all duration-200">
+                  <div className="mx-auto w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary mb-4">
                     {service.icon}
                   </div>
-                  <CardTitle className="text-base text-white mb-2">{service.title}</CardTitle>
-                  <CardContent>
-                    <CardDescription className="text-sm text-[#949494] leading-relaxed">
+                  <CardTitle className="text-lg text-foreground mb-2">{service.title}</CardTitle>
+                  <CardContent className="p-0">
+                    <CardDescription className="text-sm text-muted-foreground leading-relaxed">
                       {service.description}
                     </CardDescription>
                   </CardContent>
@@ -250,118 +250,132 @@ export default function Home() {
           </section>
 
           {/* How It Works Section */}
-          <section className="py-16">
+          <section className="py-20">
             <div className="text-center mb-12">
-              <div className="label-mono text-[#3cffd0] text-xs mb-3">HOW IT WORKS</div>
-              <h2 className="font-display text-3xl md:text-4xl text-white mb-3" style={{ lineHeight: 0.95 }}>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
+                <TrendingUp className="w-4 h-4" />
+                HOW IT WORKS
+              </div>
+              <h2 className="font-display text-3xl md:text-4xl text-foreground mb-4 tracking-tight">
                 Simple Steps to Success
               </h2>
-              <p className="text-sm text-[#949494] max-w-2xl mx-auto">
+              <p className="text-base text-muted-foreground max-w-2xl mx-auto">
                 Get started in minutes and transform your career with our AI-powered guidance.
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="bg-[#131313]/80 backdrop-blur-sm border border-white/30 rounded-[20px] p-6">
-                <div className="label-mono text-[#3cffd0] text-xs mb-2">STEP 1</div>
-                <h3 className="font-display text-xl text-white mb-2">Sign Up</h3>
-                <p className="text-sm text-[#949494] leading-relaxed">
+              <Card className="bg-card border border-border rounded-xl p-6 relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 to-primary" />
+                <div className="text-primary text-sm font-medium mb-2">STEP 1</div>
+                <h3 className="font-display text-xl text-foreground mb-2">Sign Up</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   Create your free account in seconds. No credit card required to get started.
                 </p>
               </Card>
-              <Card className="bg-[#131313]/80 backdrop-blur-sm border border-white/30 rounded-[20px] p-6">
-                <div className="label-mono text-[#3cffd0] text-xs mb-2">STEP 2</div>
-                <h3 className="font-display text-xl text-white mb-2">Chat with AI</h3>
-                <p className="text-sm text-[#949494] leading-relaxed">
+              <Card className="bg-card border border-border rounded-xl p-6 relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 to-primary" />
+                <div className="text-primary text-sm font-medium mb-2">STEP 2</div>
+                <h3 className="font-display text-xl text-foreground mb-2">Chat with AI</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   Tell our AI counselor about your skills, goals, and career aspirations.
                 </p>
               </Card>
-              <Card className="bg-[#131313]/80 backdrop-blur-sm border border-white/30 rounded-[20px] p-6">
-                <div className="label-mono text-[#3cffd0] text-xs mb-2">STEP 3</div>
-                <h3 className="font-display text-xl text-white mb-2">Get Your Plan</h3>
-                <p className="text-sm text-[#949494] leading-relaxed">
+              <Card className="bg-card border border-border rounded-xl p-6 relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 to-primary" />
+                <div className="text-primary text-sm font-medium mb-2">STEP 3</div>
+                <h3 className="font-display text-xl text-foreground mb-2">Get Your Plan</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   Receive personalized career roadmap with actionable steps and resources.
                 </p>
               </Card>
             </div>
           </section>
 
-          {/* Stats Section - Color block tile */}
-          <section className="py-16 bg-[#5200ff]/90 backdrop-blur-sm rounded-[24px] p-6 md:p-10">
-            <div className="text-center mb-10">
-              <div className="label-mono text-white text-xs mb-3">TRUSTED BY THOUSANDS</div>
-              <h2 className="font-display text-3xl md:text-4xl text-white mb-3" style={{ lineHeight: 0.95 }}>
+          {/* Stats Section */}
+          <section className="py-20 bg-primary/5 rounded-2xl px-6 md:px-10">
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
+                <Star className="w-4 h-4" />
+                TRUSTED BY THOUSANDS
+              </div>
+              <h2 className="font-display text-3xl md:text-4xl text-foreground mb-4 tracking-tight">
                 Join the Community
               </h2>
-              <p className="text-sm text-white/80">
+              <p className="text-base text-muted-foreground">
                 Join the growing community of professionals who&apos;ve transformed their careers
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
               <div>
-                <div className="font-display text-3xl md:text-4xl text-white mb-2" style={{ lineHeight: 0.95 }}>10,000+</div>
-                <div className="label-mono-sm text-white/80 text-xs">SUCCESSFUL CAREER TRANSITIONS</div>
+                <div className="font-display text-4xl md:text-5xl text-foreground mb-2 tracking-tight">10,000+</div>
+                <div className="text-sm text-muted-foreground font-medium">Successful Career Transitions</div>
               </div>
               <div>
-                <div className="font-display text-3xl md:text-4xl text-white mb-2" style={{ lineHeight: 0.95 }}>95%</div>
-                <div className="label-mono-sm text-white/80 text-xs">USER SATISFACTION RATE</div>
+                <div className="font-display text-4xl md:text-5xl text-foreground mb-2 tracking-tight">95%</div>
+                <div className="text-sm text-muted-foreground font-medium">User Satisfaction Rate</div>
               </div>
               <div>
-                <div className="font-display text-3xl md:text-4xl text-white mb-2" style={{ lineHeight: 0.95 }}>24/7</div>
-                <div className="label-mono-sm text-white/80 text-xs">AI COUNSELOR AVAILABILITY</div>
+                <div className="font-display text-4xl md:text-5xl text-foreground mb-2 tracking-tight">24/7</div>
+                <div className="text-sm text-muted-foreground font-medium">AI Counselor Availability</div>
               </div>
             </div>
           </section>
 
           {/* Features List */}
-          <section id="features" className="py-16">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+          <section id="features" className="py-20">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div>
-                <div className="label-mono text-[#3cffd0] text-xs mb-3">FEATURES</div>
-                <h2 className="font-display text-2xl md:text-3xl text-white mb-4" style={{ lineHeight: 0.95 }}>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
+                  <CheckCircle className="w-4 h-4" />
+                  FEATURES
+                </div>
+                <h2 className="font-display text-3xl md:text-4xl text-foreground mb-4 tracking-tight">
                   Everything You Need for Career Success
                 </h2>
-                <p className="text-sm text-[#949494] mb-6 leading-relaxed">
+                <p className="text-base text-muted-foreground mb-8 leading-relaxed">
                   Our comprehensive platform provides all the tools and guidance you need to advance your career, 
                   whether you&apos;re just starting out or looking to make a major transition.
                 </p>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {features.map((feature, index) => (
                     <div key={index} className="flex items-center space-x-3">
-                      <CheckCircle className="h-4 w-4 text-[#3cffd0] flex-shrink-0" />
-                      <span className="text-sm text-white">{feature}</span>
+                      <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <CheckCircle className="h-3 w-3 text-primary" />
+                      </div>
+                      <span className="text-base text-foreground">{feature}</span>
                     </div>
                   ))}
                 </div>
               </div>
               <div className="relative">
-                <Card className="p-6 bg-[#131313]/80 backdrop-blur-sm border border-white/30 rounded-[24px]">
+                <Card className="p-6 bg-card border border-border rounded-xl shadow-lg">
                   <div className="space-y-4">
                     <div className="flex items-center space-x-3">
-                      <Avatar className="bg-[#3cffd0] text-black w-8 h-8">
-                        <AvatarFallback className="bg-[#3cffd0] text-black font-bold text-xs">AI</AvatarFallback>
+                      <Avatar className="w-10 h-10">
+                        <AvatarFallback className="bg-primary text-primary-foreground font-semibold text-sm">AI</AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="font-semibold text-white text-sm">CareerPath AI</div>
-                        <div className="label-mono-sm text-[#949494] text-xs">YOUR PERSONAL CAREER COUNSELOR</div>
+                        <div className="font-semibold text-foreground text-sm">CareerPath AI</div>
+                        <div className="text-xs text-muted-foreground">YOUR PERSONAL CAREER COUNSELOR</div>
                       </div>
                     </div>
-                    <div className="bg-[#2d2d2d]/80 backdrop-blur-sm p-3 rounded-[20px] border border-white/30">
-                      <p className="text-xs text-white leading-relaxed">
+                    <div className="bg-muted/50 p-4 rounded-lg border border-border">
+                      <p className="text-sm text-foreground leading-relaxed">
                         &ldquo;Based on your skills and interests, I recommend exploring roles in Product Management. 
                         You have strong analytical thinking and communication skills that would be perfect for this field.&rdquo;
                       </p>
                     </div>
                     <div className="flex items-center space-x-3">
-                      <Avatar className="bg-[#5200ff] text-white w-8 h-8">
-                        <AvatarFallback className="bg-[#5200ff] text-white font-bold text-xs">U</AvatarFallback>
+                      <Avatar className="w-10 h-10">
+                        <AvatarFallback className="bg-secondary text-secondary-foreground font-semibold text-sm">U</AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="font-semibold text-white text-sm">You</div>
-                        <div className="label-mono-sm text-[#949494] text-xs">CAREER SEEKER</div>
+                        <div className="font-semibold text-foreground text-sm">You</div>
+                        <div className="text-xs text-muted-foreground">CAREER SEEKER</div>
                       </div>
                     </div>
-                    <div className="bg-[#3cffd0]/10 p-3 rounded-[20px] border border-[#3cffd0]/50">
-                      <p className="text-xs text-white leading-relaxed">
+                    <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
+                      <p className="text-sm text-foreground leading-relaxed">
                         &ldquo;That sounds interesting! What skills should I focus on developing?&rdquo;
                       </p>
                     </div>
@@ -371,36 +385,39 @@ export default function Home() {
             </div>
           </section>
 
-          {/* Testimonials - StoryStream timeline style */}
-          <section id="testimonials" className="py-16">
+          {/* Testimonials */}
+          <section id="testimonials" className="py-20">
             <div className="text-center mb-12">
-              <div className="label-mono text-[#3cffd0] text-xs mb-3">SUCCESS STORIES</div>
-              <h2 className="font-display text-3xl md:text-4xl text-white mb-3" style={{ lineHeight: 0.95 }}>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
+                <Star className="w-4 h-4" />
+                SUCCESS STORIES
+              </div>
+              <h2 className="font-display text-3xl md:text-4xl text-foreground mb-4 tracking-tight">
                 Transform Your Career
               </h2>
-              <p className="text-sm text-[#949494]">
+              <p className="text-base text-muted-foreground">
                 Hear from professionals who&apos;ve transformed their careers with our guidance
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {testimonials.map((testimonial, index) => (
-                <Card key={index} className="p-5 bg-[#131313]/80 backdrop-blur-sm border border-white/30 rounded-[20px]">
+                <Card key={index} className="p-6 bg-card border border-border rounded-xl hover:shadow-lg transition-shadow duration-200">
                   <CardContent className="p-0">
-                    <div className="flex items-center space-x-1 mb-3">
+                    <div className="flex items-center space-x-1 mb-4">
                       {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star key={i} className="h-3 w-3 fill-[#3cffd0] text-[#3cffd0]" />
+                        <Star key={i} className="h-4 w-4 fill-primary text-primary" />
                       ))}
                     </div>
-                    <p className="text-xs text-[#949494] mb-4 italic leading-relaxed">
+                    <p className="text-sm text-muted-foreground mb-6 italic leading-relaxed">
                       &ldquo;{testimonial.content}&rdquo;
                     </p>
                     <div className="flex items-center space-x-3">
-                      <Avatar className="bg-[#5200ff] text-white w-8 h-8">
-                        <AvatarFallback className="bg-[#5200ff] text-white font-bold text-xs">{testimonial.avatar}</AvatarFallback>
+                      <Avatar className="w-10 h-10">
+                        <AvatarFallback className="bg-secondary text-secondary-foreground font-semibold text-sm">{testimonial.avatar}</AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="font-semibold text-white text-sm">{testimonial.name}</div>
-                        <div className="label-mono-sm text-[#949494] text-xs">{testimonial.role.toUpperCase()}</div>
+                        <div className="font-semibold text-foreground text-sm">{testimonial.name}</div>
+                        <div className="text-xs text-muted-foreground">{testimonial.role}</div>
                       </div>
                     </div>
                   </CardContent>
@@ -409,23 +426,26 @@ export default function Home() {
             </div>
           </section>
 
-          {/* CTA Section - Mint color block */}
-          <section className="py-16 text-center">
-            <Card className="p-8 md:p-10 bg-[#3cffd0]/90 backdrop-blur-sm rounded-[24px] border-none">
-              <CardContent className="p-0">
-                <div className="label-mono text-black text-xs mb-3">GET STARTED</div>
-                <h2 className="font-display text-2xl md:text-3xl text-black mb-3" style={{ lineHeight: 0.95 }}>
+          {/* CTA Section */}
+          <section className="py-20">
+            <Card className="p-8 md:p-12 bg-primary rounded-2xl border-none">
+              <CardContent className="p-0 text-center">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-foreground/10 text-primary-foreground text-sm font-medium mb-4">
+                  <ArrowRight className="w-4 h-4" />
+                  GET STARTED
+                </div>
+                <h2 className="font-display text-3xl md:text-4xl text-primary-foreground mb-4 tracking-tight">
                   Ready to Transform Your Career?
                 </h2>
-                <p className="text-sm text-black/80 mb-6 max-w-2xl mx-auto leading-relaxed">
+                <p className="text-base text-primary-foreground/80 mb-8 max-w-2xl mx-auto leading-relaxed">
                   Join thousands of professionals who&apos;ve already discovered their ideal career path. 
                   Start your journey today with our AI-powered career counseling.
                 </p>
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link href="/auth/signin">  
-                  <Button size="default" className="text-sm px-6 py-3 bg-black text-white rounded-full hover:bg-[rgba(255,255,255,0.2)] border-none label-mono">
-                    GET STARTED NOW
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                  <Button size="lg" className="text-base px-8 py-6 bg-primary-foreground text-primary rounded-lg hover:opacity-90 transition-opacity">
+                    Get Started Now
+                    <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                   </Link>
                 </div>
@@ -434,21 +454,21 @@ export default function Home() {
           </section>
 
           {/* Footer */}
-          <footer className="py-10 border-t border-white/50">
+          <footer className="py-12 border-t border-border">
           <div className="text-center">
-              <div className="flex items-center justify-center space-x-2 mb-3">
-                <div className="w-5 h-5 bg-[#3cffd0] rounded flex items-center justify-center">
-                  <Heart className="h-3 w-3 text-black" />
+              <div className="flex items-center justify-center space-x-2 mb-4">
+                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                  <Heart className="h-4 w-4 text-primary-foreground" />
                 </div>
-                <span className="font-display text-base text-white">CareerPath AI</span>
+                <span className="font-display text-lg text-foreground">CareerPath AI</span>
               </div>
-              <p className="text-xs text-[#949494] mb-3">
+              <p className="text-sm text-muted-foreground mb-4">
                 Empowering careers with AI-driven insights and personalized guidance.
               </p>
-              <div className="flex justify-center space-x-4 text-xs text-[#949494]">
-                <a href="#" className="hover:text-[#3860be] transition-colors label-mono-sm">Privacy Policy</a>
-                <a href="#" className="hover:text-[#3860be] transition-colors label-mono-sm">Terms of Service</a>
-                <a href="#" className="hover:text-[#3860be] transition-colors label-mono-sm">Contact</a>
+              <div className="flex justify-center space-x-6 text-sm text-muted-foreground">
+                <a href="#" className="hover:text-foreground transition-colors">Privacy Policy</a>
+                <a href="#" className="hover:text-foreground transition-colors">Terms of Service</a>
+                <a href="#" className="hover:text-foreground transition-colors">Contact</a>
               </div>
           </div>
           </footer>

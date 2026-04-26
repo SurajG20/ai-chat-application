@@ -28,7 +28,7 @@ export function ThemeCustomizer({ onColorChange, currentColor }: ThemeCustomizer
         variant="ghost"
         size="sm"
         onClick={() => setIsOpen(!isOpen)}
-        className="text-[#949494] hover:text-white p-2 h-auto"
+        className="text-muted-foreground hover:text-foreground p-2 h-auto"
         title="Customize accent color"
       >
         <Palette className="w-4 h-4" />
@@ -40,11 +40,13 @@ export function ThemeCustomizer({ onColorChange, currentColor }: ThemeCustomizer
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           />
-          <Card className="absolute right-0 top-full mt-2 w-64 bg-[#2d2d2d] border-white/20 z-50">
+          <Card className="absolute right-0 top-full mt-2 w-64 bg-popover border-border z-50 shadow-lg">
             <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <Palette className="w-4 h-4 text-[#3cffd0]" />
-                <h3 className="text-sm font-medium text-white">ACCENT COLOR</h3>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Palette className="w-3.5 h-3.5 text-primary" />
+                </div>
+                <h3 className="text-sm font-medium text-foreground">Accent Color</h3>
               </div>
               <div className="space-y-2">
                 {accentColors.map((color) => (
@@ -54,22 +56,22 @@ export function ThemeCustomizer({ onColorChange, currentColor }: ThemeCustomizer
                       onColorChange(color.value);
                       setIsOpen(false);
                     }}
-                    className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-[#3cffd0]/10 transition-colors group"
+                    className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors group"
                   >
-                    <div className="relative w-6 h-6 rounded-full border-2 border-white/30">
+                    <div className="relative w-6 h-6 rounded-full border-2 border-border">
                       <div
                         className="w-full h-full rounded-full"
                         style={{ backgroundColor: color.value }}
                       />
                       {currentColor === color.value && (
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <Check className="w-3 h-3 text-black" />
+                          <Check className="w-3 h-3 text-white" />
                         </div>
                       )}
                     </div>
                     <div className="flex-1 text-left">
-                      <p className="text-xs font-medium text-white">{color.name}</p>
-                      <p className="text-xs text-[#949494]">{color.description}</p>
+                      <p className="text-xs font-medium text-foreground">{color.name}</p>
+                      <p className="text-xs text-muted-foreground">{color.description}</p>
                     </div>
                   </button>
                 ))}

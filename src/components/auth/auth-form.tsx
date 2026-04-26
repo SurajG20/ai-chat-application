@@ -90,34 +90,34 @@ export function AuthForm({ mode, onModeChange }: AuthFormProps) {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto shadow-2xl border-primary/20">
-      <CardHeader className="space-y-4 pb-6">
+    <Card className="w-full max-w-md mx-auto shadow-xl border-border/50">
+      <CardHeader className="space-y-6 pb-8">
         {/* Back to Home Link */}
         <div className="flex items-center justify-start">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => window.location.href = '/'}
-            className="text-muted-foreground hover:text-foreground"
+            className="text-muted-foreground hover:text-foreground -ml-2"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="h-4 w-4 mr-1" />
             Back to Home
           </Button>
         </div>
 
         {/* Logo */}
         <div className="flex items-center justify-center">
-          <div className="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center shadow-lg">
-            <Heart className="h-6 w-6 text-primary-foreground" />
+          <div className="w-14 h-14 bg-primary rounded-xl flex items-center justify-center shadow-lg">
+            <Heart className="h-7 w-7 text-primary-foreground" />
           </div>
         </div>
 
         {/* Title and Description */}
         <div className="text-center space-y-2">
-          <CardTitle className="text-2xl font-bold">
+          <CardTitle className="text-2xl font-semibold tracking-tight">
             {mode === 'signin' ? 'Welcome back!' : 'Join CareerPath AI'}
           </CardTitle>
-          <CardDescription className="text-base">
+          <CardDescription className="text-base text-muted-foreground">
             {mode === 'signin' 
               ? 'Sign in to continue your career journey' 
               : 'Start your career transformation today'
@@ -127,16 +127,16 @@ export function AuthForm({ mode, onModeChange }: AuthFormProps) {
       </CardHeader>
       
       <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-5">
           {error && (
             <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
-              <p className="text-sm text-destructive">{error}</p>
+              <p className="text-sm text-destructive font-medium">{error}</p>
             </div>
           )}
 
           {mode === 'signup' && (
             <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
+              <Label htmlFor="name" className="text-sm font-medium">Full Name</Label>
               <div className="relative">
                 <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -146,7 +146,7 @@ export function AuthForm({ mode, onModeChange }: AuthFormProps) {
                   placeholder="Enter your full name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 h-11"
                   required
                 />
               </div>
@@ -154,7 +154,7 @@ export function AuthForm({ mode, onModeChange }: AuthFormProps) {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="text-sm font-medium">Email</Label>
             <div className="relative">
               <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
@@ -164,14 +164,14 @@ export function AuthForm({ mode, onModeChange }: AuthFormProps) {
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="pl-10"
+                className="pl-10 h-11"
                 required
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password" className="text-sm font-medium">Password</Label>
             <div className="relative">
               <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
@@ -181,7 +181,7 @@ export function AuthForm({ mode, onModeChange }: AuthFormProps) {
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="pl-10 pr-10"
+                className="pl-10 pr-10 h-11"
                 required
                 minLength={mode === 'signup' ? 6 : undefined}
               />
@@ -189,7 +189,7 @@ export function AuthForm({ mode, onModeChange }: AuthFormProps) {
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? (
@@ -207,10 +207,10 @@ export function AuthForm({ mode, onModeChange }: AuthFormProps) {
           </div>
         </CardContent>
 
-        <CardFooter className="flex flex-col space-y-4 pt-6">
+        <CardFooter className="flex flex-col space-y-5 pt-4">
           <Button
             type="submit"
-            className="w-full py-6 text-lg font-medium"
+            className="w-full h-12 text-base font-medium"
             disabled={isLoading}
           >
             {isLoading ? (
@@ -226,7 +226,7 @@ export function AuthForm({ mode, onModeChange }: AuthFormProps) {
           <div className="relative w-full">
             <Separator />
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="bg-background px-3 text-xs text-muted-foreground font-medium">
+              <span className="bg-card px-3 text-xs text-muted-foreground font-medium">
                 OR
               </span>
             </div>
@@ -239,7 +239,7 @@ export function AuthForm({ mode, onModeChange }: AuthFormProps) {
             <Button
               type="button"
               variant="link"
-              className="p-0 h-auto font-medium text-primary hover:text-primary/80 ml-1"
+              className="p-0 h-auto font-semibold text-primary hover:text-primary/80 ml-1"
               onClick={switchMode}
             >
               {mode === 'signin' ? 'Sign up' : 'Sign in'}
