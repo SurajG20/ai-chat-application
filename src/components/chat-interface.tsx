@@ -14,6 +14,9 @@ import { LogoutConfirmation } from './logout-confirmation';
 import { formatMessageContent, copyToClipboard, extractPlainText, StreamingProcessor } from '../lib/message-formatter';
 import { ToastContainer } from './ui/toast';
 import { useToast } from '../hooks/use-toast';
+import { QuickPrompts } from './quick-prompts';
+import { ThemeCustomizer } from './theme-customizer';
+import { ResourceLibrary } from './resource-library';
 
 interface ChatInterfaceProps {
   userId?: number;
@@ -44,6 +47,8 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [streamingMessage, setStreamingMessage] = useState<string>('');
   const [tempUserMessage, setTempUserMessage] = useState<{ content: string; timestamp: Date } | null>(null);
+  const [accentColor, setAccentColor] = useState('#3cffd0');
+  const [resourceLibraryOpen, setResourceLibraryOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const streamBufferRef = useRef<string[]>([]);
@@ -390,6 +395,10 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
     }
   };
 
+  const handleSelectQuickPrompt = (prompt: string) => {
+    setMessage(prompt);
+  };
+
   
   const handleNewChat = () => {
     // Create a new session with a default title
@@ -415,7 +424,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
   };
 
   return (
-    <div className="flex h-screen bg-[#131313]">
+    <div className="flex h-screen bg-[#131313]" data-accent-color={accentColor}>
       {sidebarOpen && (
         <div 
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
@@ -439,8 +448,9 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
           <div className="hidden lg:flex items-center justify-between mb-4">
             {!sidebarCollapsed && <CardTitle className="text-lg font-semibold text-white label-mono-sm">CHAT HISTORY</CardTitle>}
           </div>
-          <Button 
-              className={`w-full bg-[#3cffd0] hover:bg-[rgba(255,255,255,0.2)] text-black rounded-full border-none label-mono ${sidebarCollapsed ? 'px-2' : ''}`} 
+          <Button
+              className={`w-full text-black rounded-full border-none label-mono ${sidebarCollapsed ? 'px-2' : ''}`}
+              style={{ backgroundColor: accentColor }}
               size={sidebarCollapsed ? "icon" : "lg"}
               onClick={handleNewChat}
             >
@@ -458,9 +468,10 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
                   key={session.id}
                   className={`cursor-pointer transition-all duration-200 rounded-[20px] p-2 mx-1 ${
                     currentSessionId === session.id
-                      ? 'bg-[#3cffd0]/10 border border-[#3cffd0]'
+                      ? 'border'
                       : 'hover:bg-[#2d2d2d]'
                   }`}
+                  style={currentSessionId === session.id ? { backgroundColor: `${accentColor}10`, borderColor: accentColor } : undefined}
                   onClick={() => {
                     setCurrentSessionId(session.id);
                     setSidebarOpen(false);
@@ -470,7 +481,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
                   <div className="flex items-center justify-between">
                     {sidebarCollapsed ? (
                       <div className="w-full flex justify-center">
-                        <div className="w-8 h-8 bg-[#3cffd0] rounded-full flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: accentColor }}>
                           <span className="text-xs font-medium text-black">
                             {session.title.charAt(0).toUpperCase()}
                           </span>
@@ -510,7 +521,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
           <div className="flex items-center gap-2">
             <Avatar className="w-7 h-7">
               <AvatarImage src={session?.user?.image || ''} />
-              <AvatarFallback className="bg-[#3cffd0] text-black text-xs">
+              <AvatarFallback className="text-black text-xs" style={{ backgroundColor: accentColor }}>
                 {session?.user?.name?.charAt(0) || <User className="h-3 w-3" />}
               </AvatarFallback>
             </Avatar>
@@ -543,14 +554,20 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
             <Menu className="w-5 h-5" />
           </Button>
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-[#3cffd0] rounded-lg flex items-center justify-center">
+            <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ backgroundColor: accentColor }}>
               <Heart className="h-3 w-3 text-black" />
             </div>
             <h2 className="font-display text-lg text-white truncate max-w-[200px]">
               {sessions?.find((s: ChatSession) => s.id === currentSessionId)?.title || 'CareerPath AI'}
             </h2>
           </div>
-          <div className="w-9 flex justify-end">
+          <div className="w-9 flex justify-end gap-1">
+            <ResourceLibrary
+              isOpen={resourceLibraryOpen}
+              onToggle={() => setResourceLibraryOpen(!resourceLibraryOpen)}
+              accentColor={accentColor}
+            />
+            <ThemeCustomizer onColorChange={setAccentColor} currentColor={accentColor} />
             <ThemeToggle />
           </div>
         </div>
@@ -566,7 +583,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
               <Menu className="w-5 h-5" />
             </Button>
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-[#3cffd0] rounded-lg flex items-center justify-center">
+              <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ backgroundColor: accentColor }}>
                 <Heart className="h-3 w-3 text-black" />
               </div>
               <h2 className="font-display text-lg text-white">
@@ -575,6 +592,12 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <ResourceLibrary
+              isOpen={resourceLibraryOpen}
+              onToggle={() => setResourceLibraryOpen(!resourceLibraryOpen)}
+              accentColor={accentColor}
+            />
+            <ThemeCustomizer onColorChange={setAccentColor} currentColor={accentColor} />
             <ThemeToggle />
           </div>
         </div>
@@ -590,7 +613,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
                   >
                     {msg.role === 'assistant' && (
                       <Avatar className="w-8 h-8 flex-shrink-0">
-                        <AvatarFallback className="bg-[#3cffd0] text-black">
+                        <AvatarFallback className="text-black" style={{ backgroundColor: accentColor }}>
                           <Bot className="h-4 w-4" />
                         </AvatarFallback>
                       </Avatar>
@@ -599,9 +622,10 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
                     <div className={`flex flex-col gap-1 max-w-[80%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
                       <Card className={`${
                         msg.role === 'user'
-                          ? 'bg-[#3cffd0] text-black'
+                          ? 'text-black'
                           : 'bg-[#131313] border-white'
-                      } rounded-[20px]`}>
+                      } rounded-[20px]`}
+                      style={msg.role === 'user' ? { backgroundColor: accentColor } : undefined}>
                         <CardContent className="px-3 py-2">
                           <div 
                             className="text-sm whitespace-pre-wrap leading-relaxed message-content"
@@ -650,7 +674,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
                 {tempUserMessage && (
                   <div className="flex gap-2 lg:gap-3 justify-end message-fade-in">
                     <div className="flex flex-col gap-1 max-w-[80%] items-end">
-                      <Card className="bg-[#3cffd0] text-black rounded-[20px] gpu-accelerated">
+                      <Card className="text-black rounded-[20px] gpu-accelerated" style={{ backgroundColor: accentColor }}>
                         <CardContent className="px-2 py-1">
                           <p className="text-sm whitespace-pre-wrap leading-relaxed">
                             {tempUserMessage.content}
@@ -672,7 +696,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
                 {(isTyping || streamingMessage) && (
                   <div className="flex gap-3 justify-start message-fade-in">
                     <Avatar className="w-8 h-8 flex-shrink-0">
-                      <AvatarFallback className="bg-[#3cffd0] text-black">
+                      <AvatarFallback className="text-black" style={{ backgroundColor: accentColor }}>
                         <Bot className="h-4 w-4" />
                       </AvatarFallback>
                     </Avatar>
@@ -688,16 +712,20 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
                             <span className="inline-block w-1 h-4 ml-0.5 bg-primary/60 streaming-cursor" />
                           </div>
                         ) : (
-                          <div className="flex space-x-1">
-                            <div className="w-2 h-2 bg-[#3cffd0] rounded-full animate-bounce"></div>
-                            <div className="w-2 h-2 bg-[#3cffd0] rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                            <div className="w-2 h-2 bg-[#3cffd0] rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                          <div className="flex flex-col space-y-2">
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: accentColor }}></div>
+                              <div className="w-2 h-2 rounded-full animate-pulse" style={{ animationDelay: '0.2s', backgroundColor: accentColor }}></div>
+                              <div className="w-2 h-2 rounded-full animate-pulse" style={{ animationDelay: '0.4s', backgroundColor: accentColor }}></div>
+                            </div>
+                            <p className="text-xs text-[#949494] label-mono-sm">AI is thinking...</p>
                           </div>
                         )}
                       </CardContent>
                       {streamingMessage && (
                         <div className="flex items-center justify-between w-full px-1 pt-1">
-                          <p className="label-mono-sm text-[#949494] text-xs">
+                          <p className="label-mono-sm text-[#949494] text-xs flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: accentColor }}></span>
                             STREAMING...
                           </p>
                           <Button
@@ -727,7 +755,8 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
                     setIsAtBottom(true);
                   }}
                   size="icon"
-                  className="absolute bottom-4 right-4 z-10 rounded-full bg-[#3cffd0] hover:bg-[rgba(255,255,255,0.2)] text-black"
+                  className="absolute bottom-4 right-4 z-10 rounded-full text-black"
+                  style={{ backgroundColor: accentColor }}
                   aria-label="Scroll to bottom"
                 >
                   <ArrowDown className="w-4 h-4" />
@@ -750,7 +779,8 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
                     onClick={isTyping ? handleStopResponse : handleSendMessage}
                     disabled={!message.trim() && !isTyping}
                     size="icon"
-                    className="shrink-0 bg-[#3cffd0] hover:bg-[rgba(255,255,255,0.2)] text-black rounded-full border-none"
+                    className="shrink-0 text-black rounded-full border-none"
+                    style={{ backgroundColor: accentColor }}
                     title={isTyping ? "Stop response" : "Send message"}
                   >
                     {isTyping ? <Square className="w-4 h-4" /> : <Send className="w-4 h-4" />}
@@ -763,24 +793,27 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
             </div>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center p-8">
-            <Card className="max-w-2xl mx-auto text-center bg-[#131313] border-white rounded-[24px]">
-              <CardContent className="p-8">
-                <div className="w-16 h-16 bg-[#3cffd0] rounded-[20px] flex items-center justify-center mx-auto mb-6">
-                  <Heart className="h-8 w-8 text-black" />
-                </div>
-                <h2 className="font-display text-2xl text-white mb-3">
-                  Welcome to CareerPath AI
-                </h2>
-                <p className="text-[#949494] mb-6 leading-relaxed">
-                  Start a new conversation to get personalized career advice, skill assessments, and strategic guidance from our AI counselor.
-                </p>
-                <Button size="lg" className="w-full bg-[#3cffd0] hover:bg-[rgba(255,255,255,0.2)] text-black rounded-full border-none label-mono" onClick={handleStartNewChat}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  START NEW CHAT
-                </Button>
-              </CardContent>
-            </Card>
+          <div className="flex-1 overflow-y-auto">
+            <div className="max-w-4xl mx-auto p-4 lg:p-8">
+              <Card className="text-center bg-[#131313] border-white rounded-[24px] mb-6">
+                <CardContent className="p-8">
+                  <div className="w-16 h-16 rounded-[20px] flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: accentColor }}>
+                    <Heart className="h-8 w-8 text-black" />
+                  </div>
+                  <h2 className="font-display text-2xl text-white mb-3">
+                    Welcome to CareerPath AI
+                  </h2>
+                  <p className="text-[#949494] mb-6 leading-relaxed">
+                    Start a new conversation to get personalized career advice, skill assessments, and strategic guidance from our AI counselor.
+                  </p>
+                  <Button size="lg" className="w-full text-black rounded-full border-none label-mono" style={{ backgroundColor: accentColor }} onClick={handleStartNewChat}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    START NEW CHAT
+                  </Button>
+                </CardContent>
+              </Card>
+              <QuickPrompts onSelectPrompt={handleSelectQuickPrompt} accentColor={accentColor} onStartNewChat={handleStartNewChat} />
+            </div>
           </div>
         )}
       </div>
