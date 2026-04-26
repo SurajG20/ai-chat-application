@@ -12,8 +12,8 @@ export function AuthButton() {
   if (status === 'loading') {
     return (
       <div className="flex items-center gap-2">
-        <div className="w-8 h-8 bg-muted rounded-full animate-pulse"></div>
-        <span className="text-muted-foreground text-sm">Loading...</span>
+        <div className="w-8 h-8 bg-[#2d2d2d] rounded-full animate-pulse"></div>
+        <span className="text-[#949494] text-sm">Loading...</span>
       </div>
     );
   }
@@ -24,19 +24,19 @@ export function AuthButton() {
         <div className="flex items-center gap-1 sm:gap-2">
           <Avatar className="w-7 h-7 sm:w-8 sm:h-8">
             <AvatarImage src={session.user?.image || ''} />
-            <AvatarFallback className="bg-primary/10 text-primary text-xs sm:text-sm">
+            <AvatarFallback className="bg-[#3cffd0] text-black text-xs sm:text-sm">
               {session.user?.name?.charAt(0) || <User className="h-3 w-3 sm:h-4 sm:w-4" />}
             </AvatarFallback>
           </Avatar>
           <div className="hidden md:block">
-            <div className="text-sm font-medium text-foreground">{session.user?.name}</div>
-            <div className="text-xs text-muted-foreground">Career Seeker</div>
+            <div className="text-sm font-medium text-white">{session.user?.name}</div>
+            <div className="label-mono-sm text-[#949494] text-xs">CAREER SEEKER</div>
           </div>
         </div>
         <LogoutConfirmation
           variant="ghost"
           size="sm"
-          className="text-muted-foreground hover:text-foreground p-2 sm:px-3"
+          className="text-[#949494] hover:text-white p-2 sm:px-3"
           showText={true}
         />
       </div>
@@ -46,10 +46,10 @@ export function AuthButton() {
   return (
     <Button
       onClick={() => signIn(undefined, { callbackUrl: '/chat' })}
-      className="bg-primary hover:bg-primary/90 text-primary-foreground px-3 sm:px-4"
+      className="bg-[#3cffd0] hover:bg-[rgba(255,255,255,0.2)] text-black px-3 sm:px-4 rounded-full border-none label-mono"
     >
       <LogIn className="w-4 h-4 sm:mr-2" />
-      <span className="hidden sm:inline">Sign In</span>
+      <span className="hidden sm:inline">SIGN IN</span>
     </Button>
   );
 }
