@@ -7,7 +7,7 @@ import { Card, CardContent } from '../ui/card';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Button } from '../ui/button';
 import { MessageBubble, TypingIndicator } from './message-bubble';
-import { formatMessageContent } from '../../lib/message-formatter';
+import { MarkdownContent } from './markdown-content';
 import type { ChatMessage, TempUserMessage, AccentColor } from '../../types/chat';
 
 interface ChatMessageListProps {
@@ -43,10 +43,9 @@ const StreamingMessage = memo(function StreamingMessage({
       </Avatar>
       <Card className="bg-muted/50 border-border rounded-xl max-w-[80%] gpu-accelerated">
         <CardContent className="px-4 py-3">
-          <div 
-            className="text-sm whitespace-pre-wrap leading-relaxed streaming-text message-content"
-            dangerouslySetInnerHTML={{ __html: formatMessageContent(content) }}
-          />
+          <div className="text-sm streaming-text">
+            <MarkdownContent content={content} />
+          </div>
         </CardContent>
         <div className="flex items-center justify-between w-full px-4 pb-3 pt-1">
           <p className="text-xs text-muted-foreground flex items-center gap-1.5">

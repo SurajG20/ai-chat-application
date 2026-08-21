@@ -5,7 +5,7 @@ import { Bot, User, Copy } from 'lucide-react';
 import { Card, CardContent } from '../ui/card';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Button } from '../ui/button';
-import { formatMessageContent } from '../../lib/message-formatter';
+import { MarkdownContent } from './markdown-content';
 import type { ChatMessage, MessageRole, AccentColor } from '../../types/chat';
 
 interface MessageBubbleProps {
@@ -19,20 +19,15 @@ interface TypingIndicatorProps {
 }
 
 // Memoized message content to prevent re-renders
-const MessageContent = memo(function MessageContent({ 
-  content, 
-  role 
-}: { 
-  content: string; 
+const MessageContent = memo(function MessageContent({
+  content,
+  role
+}: {
+  content: string;
   role: MessageRole | string;
 }) {
   if (role === 'assistant') {
-    return (
-      <div 
-        className="text-sm whitespace-pre-wrap leading-relaxed message-content"
-        dangerouslySetInnerHTML={{ __html: formatMessageContent(content) }}
-      />
-    );
+    return <MarkdownContent content={content} />;
   }
   return (
     <p className="text-sm whitespace-pre-wrap leading-relaxed">

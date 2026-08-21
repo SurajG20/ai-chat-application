@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { copyToClipboard, extractPlainText } from '../lib/message-formatter';
 import { ToastContainer } from './ui/toast';
@@ -83,31 +83,6 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
     onNewChat: () => createSession(),
     isTyping,
   });
-
-  // Global copy code handler
-  useEffect(() => {
-    (window as Window & { copyCode?: (button: HTMLButtonElement) => Promise<void> }).copyCode = async (button: HTMLButtonElement) => {
-      const codeBlock = button.closest('.code-block');
-      const codeElement = codeBlock?.querySelector('code');
-      if (codeElement) {
-        const codeText = codeElement.textContent || '';
-        const success = await copyToClipboard(codeText);
-        if (success) {
-          const originalText = button.innerHTML;
-          button.innerHTML = '✓ Copied';
-          button.style.color = 'hsl(var(--success))';
-          setTimeout(() => {
-            button.innerHTML = originalText;
-            button.style.color = '';
-          }, 2000);
-        }
-      }
-    };
-
-    return () => {
-      delete (window as Window & { copyCode?: (button: HTMLButtonElement) => Promise<void> }).copyCode;
-    };
-  }, []);
 
   const handleCopyMessage = useCallback(async (content: string, isStreaming: boolean = false) => {
     const plainText = extractPlainText(content);
