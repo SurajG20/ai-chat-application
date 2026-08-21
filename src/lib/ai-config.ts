@@ -23,76 +23,46 @@ export interface AIProvider {
 
 /**
  * NVIDIA Model Configurations
- * Optimized for performance and reliability
+ * Verified live against integrate.api.nvidia.com — retire and re-verify
+ * when NVIDIA rotates checkpoints (a 410 from the API means a model is gone).
  */
 export const NVIDIA_MODELS: Record<string, ModelConfig> = {
-  'mistral-large-3': {
-    model: 'mistralai/mistral-large-3-675b-instruct-2512',
+  'kimi-k3': {
+    model: 'moonshotai/kimi-k3',
     temperature: 0.7,
     top_p: 0.95,
     max_tokens: 8192,
-    extra_body: {},
-    description: 'General purpose MoE LLM, excellent for chat and instruction-following'
-  },
-  'minimax-m2.7': {
-    model: 'minimaxai/minimax-m2.7',
-    temperature: 0.8,
-    top_p: 0.95,
-    max_tokens: 8192,
-    extra_body: {},
-    description: 'Fast coding and reasoning model (230B parameters)'
-  },
-  'kimi-k2-instruct': {
-    model: 'moonshotai/kimi-k2-instruct-0905',
-    temperature: 0.7,
-    top_p: 0.95,
-    max_tokens: 8192,
-    extra_body: {},
-    description: 'Enhanced reasoning with longer context window'
-  },
-  'qwen3.5-coder': {
-    model: 'qwen/qwen3.5-coder-480b-a35b-instruct',
-    temperature: 0.6,
-    top_p: 0.95,
-    max_tokens: 8192,
-    extra_body: {},
-    description: 'Specialized for agentic coding and browser use'
-  },
-  'mistral-medium-3': {
-    model: 'mistralai/mistral-medium-3-instruct',
-    temperature: 0.7,
-    top_p: 0.95,
-    max_tokens: 8192,
-    extra_body: {},
-    description: 'Multimodal model for enterprise applications'
-  },
-  'seed-csa-36b': {
-    model: 'bytedance/seed-csa-36b-instruct',
-    temperature: 0.7,
-    top_p: 0.95,
-    max_tokens: 8192,
-    extra_body: {},
-    description: 'ByteDance\'s efficient long-context model'
-  },
-  'deepseek-v4-pro': {
-    model: 'deepseek-ai/deepseek-v4-pro',
-    temperature: 1,
-    top_p: 0.95,
-    max_tokens: 16384,
     extra_body: {
       chat_template_kwargs: {
-        thinking: true,
-        reasoning_effort: 'high'
-      }
+        thinking: false,
+      },
     },
-    description: 'Advanced reasoning with thinking capabilities'
-  }
+    description: 'Fast, high-quality general chat (thinking disabled for snappy replies)'
+  },
+  'gpt-oss-120b': {
+    model: 'openai/gpt-oss-120b',
+    temperature: 0.7,
+    top_p: 0.95,
+    max_tokens: 8192,
+    extra_body: {
+      reasoning_effort: 'low',
+    },
+    description: 'OpenAI open-weight model with light reasoning'
+  },
+  'nemotron-super-49b': {
+    model: 'nvidia/llama-3.3-nemotron-super-49b-v1.5',
+    temperature: 0.7,
+    top_p: 0.95,
+    max_tokens: 16384,
+    extra_body: {},
+    description: 'NVIDIA reasoning model for deeper, more structured advice'
+  },
 };
 
 /**
  * Default model configuration
  */
-export const DEFAULT_MODEL = 'mistral-large-3';
+export const DEFAULT_MODEL = 'kimi-k3';
 
 /**
  * System prompts for different contexts
@@ -110,7 +80,7 @@ export const SYSTEM_PROMPTS = {
   
   Always be encouraging, practical, and specific in your advice. Ask clarifying questions when needed to provide the most relevant guidance.`,
 
-  TITLE_GENERATOR: 'Generate a concise, descriptive title (max 50 characters) for a chat session based on the user\'s first message. The title should capture the main topic or question. Return only the title, no quotes or extra text.'
+  TITLE_GENERATOR: 'Generate a concise chat session title of at most 8 words based on the user\'s first message. Capture the main topic or question. Return only the title, with no quotes and no extra text.'
 };
 
 /**

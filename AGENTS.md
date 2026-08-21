@@ -61,7 +61,7 @@ messages (id, session_id FK, content, role ['user'|'assistant'], created_at)
 
 ### AI Integration
 - NVIDIA NIM API (OpenAI-compatible SDK)
-- 7 configurable models (default: mistralai/mistral-large-3)
+- 3 verified live models (default: moonshotai/kimi-k3)
 - Career counselor system prompt
 - Configurable model via `NVIDIA_MODEL` env var
 
@@ -206,7 +206,7 @@ RootLayout
 |---|---|
 | `DATABASE_URL` | PostgreSQL connection string |
 | `NVIDIA_API_KEY` | NVIDIA NIM API key |
-| `NVIDIA_MODEL` | Model name (default: mistralai/mistral-large-3) |
+| `NVIDIA_MODEL` | Model name (default: moonshotai/kimi-k3) |
 | `NEXTAUTH_URL` | NextAuth URL (default: http://localhost:3000) |
 | `NEXTAUTH_SECRET` | NextAuth JWT secret |
 

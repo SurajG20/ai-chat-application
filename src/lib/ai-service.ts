@@ -116,9 +116,14 @@ export class AIService {
         ...this.currentConfig!.extra_body
       });
 
-      const title = completion.choices[0]?.message?.content?.trim();
-      
-      if (title && title.length > 0) {
+      const rawTitle = completion.choices[0]?.message?.content?.trim();
+
+      if (rawTitle && rawTitle.length > 0) {
+        // Strip wrapping quotes and hard-cap length at a word boundary
+        let title = rawTitle.replace(/^["']+|["']+$/g, '');
+        if (title.length > 50) {
+          title = title.slice(0, 47).replace(/\s+\S*$/, '') + '...';
+        }
         console.log('✅ AI generated title:', title);
         return title;
       } else {
@@ -152,7 +157,7 @@ export class AIService {
           },
           ...messages
         ],
-        max_tokens: maxTokens || Math.min(this.currentConfig!.max_tokens, 500),
+        max_tokens: maxTokens || Math.min(this.currentConfig!.max_tokens, 1500),
         temperature: this.currentConfig!.temperature,
         top_p: this.currentConfig!.top_p,
         ...this.currentConfig!.extra_body
@@ -188,7 +193,7 @@ export class AIService {
           },
           ...messages
         ],
-        max_tokens: maxTokens || Math.min(this.currentConfig!.max_tokens, 500),
+        max_tokens: maxTokens || Math.min(this.currentConfig!.max_tokens, 1500),
         temperature: this.currentConfig!.temperature,
         top_p: this.currentConfig!.top_p,
         stream: true,
