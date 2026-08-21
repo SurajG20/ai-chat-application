@@ -1,7 +1,7 @@
 'use client';
 
 import { memo } from 'react';
-import { Plus, Heart } from 'lucide-react';
+import { Plus, GraduationCap } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { QuickPrompts } from '../quick-prompts';
@@ -27,7 +27,7 @@ export const WelcomeScreen = memo(function WelcomeScreen({
               className="w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-6" 
               style={{ backgroundColor: accentColor }}
             >
-              <Heart className="h-8 w-8 text-primary-foreground" />
+              <GraduationCap className="h-8 w-8 text-primary-foreground" />
             </div>
             <h2 className="font-display text-2xl text-foreground mb-3 tracking-tight">
               Welcome to CareerPath AI

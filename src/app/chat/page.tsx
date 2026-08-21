@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { ChatInterface } from '@/components/chat-interface';
+import { ChatErrorBoundary } from '@/components/chat-error-boundary';
 
 export default function ChatPage() {
   const { data: session, status } = useSession();
@@ -29,8 +30,8 @@ export default function ChatPage() {
   if (!session) return null;
 
   return (
-    <ChatInterface userId={parseInt((session.user as { id?: string })?.id || '0')} />
+    <ChatErrorBoundary>
+      <ChatInterface userId={parseInt((session.user as { id?: string })?.id || '0')} />
+    </ChatErrorBoundary>
   );
 }
-
-

@@ -98,7 +98,7 @@ interface ResourceLibraryProps {
   accentColor?: string;
 }
 
-export function ResourceLibrary({ isOpen = false, onToggle, accentColor = '#3cffd0' }: ResourceLibraryProps) {
+export function ResourceLibrary({ isOpen = false, onToggle, accentColor = '#2563eb' }: ResourceLibraryProps) {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [showFeaturedOnly, setShowFeaturedOnly] = useState(false);
 

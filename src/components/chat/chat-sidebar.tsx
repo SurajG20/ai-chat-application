@@ -21,7 +21,6 @@ interface ChatSidebarProps {
   onSessionSelect: (sessionId: number) => void;
   onCreateSession: () => void;
   onDeleteSession: (sessionId: number) => void;
-  _onToggleSidebar: () => void;
   onCloseMobileSidebar: () => void;
 }
 
@@ -45,7 +44,7 @@ const SessionItem = memo(function SessionItem({
 }) {
   return (
     <div
-      className={`cursor-pointer transition-all duration-200 rounded-lg p-2 mx-1 ${
+      className={`group cursor-pointer transition-all duration-200 rounded-lg p-2 mx-1 ${
         isActive ? 'bg-primary/10 border border-primary/50' : 'hover:bg-muted'
       }`}
       onClick={onSelect}
@@ -117,7 +116,6 @@ export const ChatSidebar = memo(function ChatSidebar({
   onSessionSelect,
   onCreateSession,
   onDeleteSession,
-  _onToggleSidebar,
   onCloseMobileSidebar,
 }: ChatSidebarProps) {
   const handleDelete = useCallback((sessionId: number) => (e: React.MouseEvent) => {
@@ -203,7 +201,7 @@ export const ChatSidebar = memo(function ChatSidebar({
         </div>
 
         {/* User profile */}
-        <div className="flex-shrink-0 p-3 border-t border-sidebar-border">
+        <div className="flex-shrink-0 p-4 border-t border-sidebar-border">
           <div className="flex items-center gap-2">
             <Avatar className="w-8 h-8">
               <AvatarImage src={userImage || ''} />

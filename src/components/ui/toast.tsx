@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Check, X, Copy } from 'lucide-react';
+import { Check, X, Info } from 'lucide-react';
 
 interface ToastProps {
   message: string;
@@ -29,7 +29,7 @@ export function Toast({ message, type, duration = 3000, onClose }: ToastProps) {
       case 'error':
         return <X className="w-4 h-4" />;
       case 'info':
-        return <Copy className="w-4 h-4" />;
+        return <Info className="w-4 h-4" />;
       default:
         return null;
     }

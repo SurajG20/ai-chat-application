@@ -122,48 +122,23 @@ export async function copyToClipboard(text: string): Promise<boolean> {
 }
 
 /**
- * Extract plain text from formatted content for copying
+ * Extract plain text from formatted content for copying.
+ * Strips markdown syntax (code fences, emphasis) and HTML markup,
+ * keeping the human-readable text and code content.
  */
 export function extractPlainText(content: string): string {
   return content
+    .replace(/```+\w*\n?/g, '') // Remove code fences, keep code content
     .replace(/<[^>]*>/g, '') // Remove HTML tags
     .replace(/&nbsp;/g, ' ') // Replace non-breaking spaces
     .replace(/&lt;/g, '<') // Replace HTML entities
     .replace(/&gt;/g, '>')
     .replace(/&amp;/g, '&')
     .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'");
+    .replace(/&#39;/g, "'")
+    .replace(/`([^`]+)`/g, '$1') // Inline code markers
+    .replace(/\*\*([^*]+)\*\*/g, '$1') // Bold
+    .replace(/\*([^*]+)\*/g, '$1'); // Italic
 }
 
-/**
- * Smooth streaming text processor
- */
-export class StreamingProcessor {
-  private buffer: string = '';
-  private lastUpdate: number = 0;
-  private updateDelay: number = 50; // milliseconds between updates
-  
-  constructor(private onUpdate: (text: string) => void) {}
-  
-  addChunk(chunk: string): void {
-    this.buffer += chunk;
-    const now = Date.now();
-    
-    // Throttle updates for smoother streaming
-    if (now - this.lastUpdate >= this.updateDelay) {
-      this.flush();
-      this.lastUpdate = now;
-    }
-  }
-  
-  flush(): void {
-    if (this.buffer) {
-      this.onUpdate(this.buffer);
-      this.buffer = '';
-    }
-  }
-  
-  complete(): void {
-    this.flush();
-  }
-}
+

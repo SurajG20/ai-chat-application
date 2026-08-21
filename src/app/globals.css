@@ -36,6 +36,8 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
   --radius-sm: 6px;
   --radius-md: 8px;
   --radius-lg: 12px;
@@ -46,14 +48,14 @@
 }
 
 :root {
-  /* Linear-inspired Premium Design System */
-  /* Primary - Brand Mint (kept for identity) */
-  --primary: #3cffd0;
-  --primary-foreground: #0a0a0a;
+  /* Professional Corporate Design System */
+  /* Primary - Brand Blue */
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
   
   /* Secondary & Accent */
-  --accent: #3cffd0;
-  --accent-foreground: #0a0a0a;
+  --accent: #2563eb;
+  --accent-foreground: #ffffff;
   
   /* Surface & Background - Light Mode (Default) */
   --background: #ffffff;
@@ -70,14 +72,14 @@
   /* Borders & Inputs */
   --border: #e5e5e5;
   --input: #e5e5e5;
-  --ring: #3cffd0;
+  --ring: #2563eb;
   
   /* Destructive/Error */
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
   
   /* Chart colors */
-  --chart-1: #3cffd0;
+  --chart-1: #2563eb;
   --chart-2: #0a0a0a;
   --chart-3: #737373;
   --chart-4: #ef4444;
@@ -86,16 +88,16 @@
   /* Sidebar - Light */
   --sidebar: #fafafa;
   --sidebar-foreground: #0a0a0a;
-  --sidebar-primary: #3cffd0;
-  --sidebar-primary-foreground: #0a0a0a;
+  --sidebar-primary: #2563eb;
+  --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #f5f5f5;
   --sidebar-accent-foreground: #0a0a0a;
   --sidebar-border: #e5e5e5;
-  --sidebar-ring: #3cffd0;
+  --sidebar-ring: #2563eb;
   
   /* Success */
-  --color-success: #3cffd0;
-  --color-success-foreground: #0a0a0a;
+  --success: #16a34a;
+  --success-foreground: #ffffff;
 }
 
 .dark {
@@ -114,17 +116,17 @@
   /* Borders & Inputs */
   --border: #262626;
   --input: #262626;
-  --ring: #3cffd0;
+  --ring: #2563eb;
   
   /* Sidebar - Dark */
   --sidebar: #0a0a0a;
   --sidebar-foreground: #fafafa;
-  --sidebar-primary: #3cffd0;
-  --sidebar-primary-foreground: #0a0a0a;
+  --sidebar-primary: #2563eb;
+  --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #171717;
   --sidebar-accent-foreground: #fafafa;
   --sidebar-border: #262626;
-  --sidebar-ring: #3cffd0;
+  --sidebar-ring: #2563eb;
 }
 
 @layer base {
@@ -349,34 +351,18 @@
     color: hsl(var(--foreground));
   }
 
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(2px);
+  @media (prefers-reduced-motion: reduce) {
+    .streaming-text,
+    .message-fade-in,
+    .streaming-cursor {
+      animation: none !important;
     }
-    to {
-      opacity: 1;
-      transform: translateY(0);
+    html {
+      scroll-behavior: auto;
     }
-  }
-
-  @keyframes blink {
-    0%, 50% {
-      opacity: 1;
-    }
-    51%, 100% {
-      opacity: 0;
-    }
-  }
-
-  @keyframes messageSlideIn {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
     }
   }
 

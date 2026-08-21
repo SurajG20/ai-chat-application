@@ -30,7 +30,7 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
   const { toasts, removeToast, showSuccess, showError } = useToast();
   
   // Theme state
-  const [accentColor, setAccentColor] = useState<AccentColor>('#3cffd0');
+  const [accentColor, setAccentColor] = useState<AccentColor>('#2563eb');
   const [resourceLibraryOpen, setResourceLibraryOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -50,12 +50,18 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
     handleSendMessage,
     handleStopResponse,
     handleSelectQuickPrompt,
-  } = useChat({ userId, accentColor });
+    streamManager,
+  } = useChat({
+    userId,
+    onMaxStreamsExceeded: () =>
+      showError('Too many responses streaming. Wait for one to finish, then try again.', 3000),
+  });
 
   // Sessions hook for session management
   const {
     createSession,
-    deleteSession,
+    requestDeleteSession,
+    deleteDialog,
   } = useChatSessions({
     userId,
     onSessionChange: setCurrentSessionId,
@@ -127,11 +133,17 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
   }, [createSession]);
 
   const handleDeleteSession = useCallback((sessionId: number) => {
-    deleteSession(sessionId);
-  }, [deleteSession]);
+    requestDeleteSession(sessionId);
+  }, [requestDeleteSession]);
 
   return (
     <div className="flex h-screen bg-background" data-accent-color={accentColor}>
+      {/* Live tRPC subscriptions, one per active stream */}
+      {streamManager}
+
+      {/* Delete session confirmation */}
+      {deleteDialog}
+
       {/* Sidebar */}
       <ChatSidebar
         sessions={sessions}
@@ -145,7 +157,6 @@ export function ChatInterface({ userId }: ChatInterfaceProps) {
         onSessionSelect={setCurrentSessionId}
         onCreateSession={handleNewChat}
         onDeleteSession={handleDeleteSession}
-        _onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
         onCloseMobileSidebar={() => setSidebarOpen(false)}
       />
 

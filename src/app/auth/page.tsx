@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Heart, LogIn, UserPlus, ArrowRight, Target, TrendingUp } from 'lucide-react';
+import { GraduationCap, LogIn, UserPlus, ArrowRight, Target, TrendingUp } from 'lucide-react';
 
 export default function AuthPage() {
   return (
@@ -14,8 +14,8 @@ export default function AuthPage() {
           <CardHeader className="space-y-6 pb-8">
             {/* Logo */}
             <div className="flex items-center justify-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center shadow-lg">
-                <Heart className="h-8 w-8 text-primary-foreground" />
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary shadow-lg">
+                <GraduationCap className="h-8 w-8 text-primary-foreground" />
               </div>
             </div>
             

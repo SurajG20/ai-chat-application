@@ -1,7 +1,7 @@
 'use client';
 
 import { memo } from 'react';
-import { Menu, Heart } from 'lucide-react';
+import { Menu, GraduationCap } from 'lucide-react';
 import { Button } from '../ui/button';
 import { ThemeToggle } from '../theme-toggle';
 import { ThemeCustomizer } from '../theme-customizer';
@@ -34,7 +34,7 @@ export const ChatHeader = memo(function ChatHeader({
 
   if (isMobile) {
     return (
-      <div className="lg:hidden bg-background border-b border-border px-4 py-3 flex items-center justify-between">
+      <div className="lg:hidden bg-background border-b border-border px-4 h-14 flex items-center justify-between">
         <Button
           variant="ghost"
           size="sm"
@@ -48,7 +48,7 @@ export const ChatHeader = memo(function ChatHeader({
             className="w-7 h-7 rounded-lg flex items-center justify-center" 
             style={{ backgroundColor: accentColor }}
           >
-            <Heart className="h-3.5 w-3.5 text-primary-foreground" />
+            <GraduationCap className="h-3.5 w-3.5 text-primary-foreground" />
           </div>
           <h2 className="font-display text-base text-foreground truncate max-w-[200px]">
             {title}
@@ -68,7 +68,7 @@ export const ChatHeader = memo(function ChatHeader({
   }
 
   return (
-    <div className="hidden lg:flex bg-background border-b border-border px-6 py-3 items-center justify-between relative z-10">
+    <div className="hidden lg:flex bg-background border-b border-border px-6 h-14 items-center justify-between relative z-10">
       <div className="flex items-center gap-3">
         <Button
           variant="ghost"
@@ -83,7 +83,7 @@ export const ChatHeader = memo(function ChatHeader({
             className="w-6 h-6 rounded-md flex items-center justify-center" 
             style={{ backgroundColor: accentColor }}
           >
-            <Heart className="h-3 w-3 text-primary-foreground" />
+            <GraduationCap className="h-3 w-3 text-primary-foreground" />
           </div>
           <h2 className="font-display text-base text-foreground">
             {title}

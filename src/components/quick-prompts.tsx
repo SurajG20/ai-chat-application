@@ -1,7 +1,6 @@
 'use client';
 
 import { Sparkles, Briefcase, TrendingUp, GraduationCap, DollarSign, ArrowRight, LucideIcon } from 'lucide-react';
-import { Card } from './ui/card';
 
 interface QuickPrompt {
   id: string;
@@ -23,7 +22,7 @@ const quickPrompts: QuickPrompt[] = [
     id: 'switch',
     icon: ArrowRight,
     label: 'Career Switch',
-    prompt: 'How do I switch careers from [current field] to [new field]? What steps should I take?',
+    prompt: 'How do I switch careers into a new industry? What steps should I take to make a successful transition?',
     category: 'Transition'
   },
   {
@@ -51,7 +50,7 @@ const quickPrompts: QuickPrompt[] = [
     id: 'interview',
     icon: Sparkles,
     label: 'Interview Prep',
-    prompt: 'What are the most common interview questions for [role] and how should I answer them?',
+    prompt: 'What are the most common interview questions and how should I structure strong answers?',
     category: 'Interview'
   }
 ];
@@ -62,7 +61,7 @@ interface QuickPromptsProps {
   onStartNewChat?: () => void;
 }
 
-export function QuickPrompts({ onSelectPrompt, accentColor = '#3cffd0', onStartNewChat }: QuickPromptsProps) {
+export function QuickPrompts({ onSelectPrompt, accentColor = '#2563eb', onStartNewChat }: QuickPromptsProps) {
   return (
     <div className="mb-4">
       <div className="flex items-center gap-2 mb-4">
@@ -74,15 +73,24 @@ export function QuickPrompts({ onSelectPrompt, accentColor = '#3cffd0', onStartN
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {quickPrompts.map((quickPrompt) => {
           const Icon = quickPrompt.icon;
+          const activate = () => {
+            if (onStartNewChat) {
+              onStartNewChat();
+            }
+            onSelectPrompt(quickPrompt.prompt);
+          };
           return (
-            <Card
+            <div
               key={quickPrompt.id}
-              className="bg-card border-border hover:border-primary/30 hover:shadow-md transition-all duration-200 cursor-pointer group"
-              onClick={() => {
-                if (onStartNewChat) {
-                  onStartNewChat();
+              role="button"
+              tabIndex={0}
+              className="bg-card border border-border hover:border-primary/30 hover:shadow-md transition-all duration-200 cursor-pointer group rounded-xl"
+              onClick={activate}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  activate();
                 }
-                onSelectPrompt(quickPrompt.prompt);
               }}
             >
               <div className="p-4">
@@ -97,7 +105,7 @@ export function QuickPrompts({ onSelectPrompt, accentColor = '#3cffd0', onStartN
                 </div>
                 <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{quickPrompt.prompt}</p>
               </div>
-            </Card>
+            </div>
           );
         })}
       </div>

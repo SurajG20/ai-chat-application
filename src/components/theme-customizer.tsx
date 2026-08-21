@@ -6,12 +6,12 @@ import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 
 const accentColors = [
-  { name: 'Jelly Mint', value: '#3cffd0', description: 'Default accent color' },
-  { name: 'Verge Ultraviolet', value: '#5200ff', description: 'Purple accent' },
-  { name: 'Electric Blue', value: '#3860be', description: 'Blue accent' },
-  { name: 'Sunset Orange', value: '#ff6b35', description: 'Orange accent' },
-  { name: 'Hot Pink', value: '#ff2d92', description: 'Pink accent' },
-  { name: 'Lime Green', value: '#7fff00', description: 'Green accent' },
+  { name: 'Corporate Blue', value: '#2563eb', description: 'Default accent color' },
+  { name: 'Executive Navy', value: '#1e40af', description: 'Deep navy accent' },
+  { name: 'Royal Indigo', value: '#4f46e5', description: 'Indigo accent' },
+  { name: 'Forest Green', value: '#059669', description: 'Emerald accent' },
+  { name: 'Burgundy', value: '#9f1239', description: 'Classic red accent' },
+  { name: 'Graphite', value: '#475569', description: 'Slate gray accent' },
 ];
 
 interface ThemeCustomizerProps {

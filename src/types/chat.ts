@@ -51,27 +51,4 @@ export interface QuickPromptData {
   category: string;
 }
 
-export interface ChatState {
-  currentSessionId: number | null;
-  message: string;
-  isTyping: boolean;
-  streamingMessage: string;
-  tempUserMessage: TempUserMessage | null;
-}
-
-export interface StreamingState {
-  shouldStream: boolean;
-  pendingMessage: SendMessageInput | null;
-  streamBuffer: string[];
-}
-
 export type AccentColor = string;
-
-export interface ThemeState {
-  accentColor: AccentColor;
-}
-
-export interface SidebarState {
-  isOpen: boolean;
-  isCollapsed: boolean;
-}

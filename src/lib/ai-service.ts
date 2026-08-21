@@ -5,6 +5,7 @@
 
 import OpenAI from 'openai';
 import { DEFAULT_MODEL, validateModelConfig, SYSTEM_PROMPTS, ERROR_MESSAGES, type ModelConfig, type AIProvider } from './ai-config';
+import { generateFallbackTitle } from './chat-title';
 
 /**
  * AI Service Class
@@ -92,7 +93,7 @@ export class AIService {
     
     if (!this.isAvailable()) {
       console.log('⚠️ AI service not available, using fallback title generation');
-      return this.generateFallbackTitle(firstMessage);
+      return generateFallbackTitle(firstMessage);
     }
 
     try {
@@ -122,11 +123,11 @@ export class AIService {
         return title;
       } else {
         console.log('⚠️ AI returned empty title, using fallback');
-        return this.generateFallbackTitle(firstMessage);
+        return generateFallbackTitle(firstMessage);
       }
     } catch (error) {
       console.error('❌ Error generating chat title:', error);
-      return this.generateFallbackTitle(firstMessage);
+      return generateFallbackTitle(firstMessage);
     }
   }
 
@@ -210,44 +211,6 @@ export class AIService {
       console.error('Error in streaming response:', error);
       yield { content: ERROR_MESSAGES.API_ERROR };
     }
-  }
-
-  /**
-   * Generate fallback title when AI is unavailable
-   */
-  private generateFallbackTitle(message: string): string {
-    // Remove common prefixes and clean up the message
-    const cleanedMessage = message
-      .replace(/^(hi|hello|hey|help|can you|could you|please|i need|i want|i'm looking for)\s+/i, '')
-      .replace(/[!?.,;:]$/g, '')
-      .trim();
-    
-    const words = cleanedMessage.split(' ').filter(word => word.length > 0);
-    
-    if (words.length === 0) {
-      return 'New Chat';
-    }
-    
-    // Take first 3-5 words, aiming for reasonable length
-    const titleWords = words.slice(0, Math.min(4, words.length));
-    let title = titleWords.join(' ');
-    
-    // Capitalize first letter of each word
-    title = title.split(' ').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-    ).join(' ');
-    
-    // Add ellipsis if we truncated
-    if (words.length > 4) {
-      title += '...';
-    }
-    
-    // Ensure title is not too long
-    if (title.length > 50) {
-      title = title.substring(0, 47) + '...';
-    }
-    
-    return title || 'New Chat';
   }
 
   /**

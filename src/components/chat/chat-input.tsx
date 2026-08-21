@@ -1,9 +1,8 @@
 'use client';
 
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useRef, useEffect } from 'react';
 import { Send, Square } from 'lucide-react';
 import { Button } from '../ui/button';
-import { Input } from '../ui/input';
 import type { AccentColor } from '../../types/chat';
 
 interface ChatInputProps {
@@ -25,7 +24,16 @@ export const ChatInput = memo(function ChatInput({
   onStopResponse,
   placeholder = "Ask about your career goals, skills, or get advice...",
 }: ChatInputProps) {
-  const handleKeyPress = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
+    }
+  }, [message]);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey && !isTyping) {
       e.preventDefault();
       onSendMessage();
@@ -39,14 +47,17 @@ export const ChatInput = memo(function ChatInput({
   return (
     <div className="flex-shrink-0 border-t border-border p-4 lg:p-6 bg-background">
       <div className="max-w-4xl mx-auto">
-        <div className="flex gap-3">
-          <Input
-            type="text"
+        <div className="flex gap-3 items-end">
+          <textarea
+            ref={textareaRef}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyDown}
             placeholder={activePlaceholder}
-            className="flex-1 h-11 text-base bg-muted/50 border-border text-foreground placeholder:text-muted-foreground rounded-lg focus-visible:ring-primary"
+            rows={1}
+            maxLength={4000}
+            className="flex-1 min-h-[44px] max-h-[200px] text-base bg-muted/50 border border-border text-foreground placeholder:text-muted-foreground rounded-lg px-4 py-2.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary resize-none"
+            disabled={isTyping}
           />
           <Button
             onClick={isTyping ? onStopResponse : onSendMessage}

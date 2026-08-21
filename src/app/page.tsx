@@ -2,421 +2,447 @@
 
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
-// Chat moved to dedicated /chat page
 import { AuthButton } from '../components/auth-button';
 import { Button } from '../components/ui/button';
-import { Card, CardContent, CardDescription, CardTitle } from '../components/ui/card';
+import { Card, CardContent } from '../components/ui/card';
 import { Avatar, AvatarFallback } from '../components/ui/avatar';
-import { 
-  Target, 
-  BookOpen, 
-  MessageCircle, 
-  Star, 
-  ArrowRight, 
+import {
+  Target,
+  BookOpen,
+  MessageCircle,
+  Star,
+  ArrowRight,
   CheckCircle,
   TrendingUp,
-  Heart,
+  GraduationCap,
   Menu,
   X,
-  Sparkles
+  Compass,
 } from 'lucide-react';
 import Link from 'next/link';
+
+// Spacing system:
+// - Container: mx-auto max-w-6xl px-6 lg:px-8
+// - Section rhythm: py-20 md:py-24
+// - Section header: badge + title + copy, followed by mt-12 md:mt-16 content
+// - Cards: uniform p-6, gap-6 grids
+
+function BrandMark({ className = 'h-5 w-5' }: { className?: string }) {
+  return (
+    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary">
+      <GraduationCap className={`${className} text-primary-foreground`} />
+    </div>
+  );
+}
 
 export default function Home() {
   const { data: session, status } = useSession();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  const navLinks = [
+    { href: '#services', label: 'Services' },
+    { href: '#features', label: 'Features' },
+    { href: '#testimonials', label: 'Success Stories' },
+  ];
+
   const services = [
     {
       icon: <Target className="h-6 w-6" />,
-      title: "Career Assessment",
-      description: "Discover your strengths, interests, and career preferences through our comprehensive AI-powered assessment tools that analyze your skills, experience, and aspirations."
+      title: 'Career Assessment',
+      description:
+        'Discover your strengths, interests, and career preferences through comprehensive AI-powered assessment tools.',
     },
     {
       icon: <BookOpen className="h-6 w-6" />,
-      title: "Skill Development",
-      description: "Get personalized recommendations for courses, certifications, and skill-building opportunities tailored to your career goals and industry requirements."
+      title: 'Skill Development',
+      description:
+        'Get personalized recommendations for courses, certifications, and skill-building opportunities tailored to your goals.',
     },
     {
       icon: <TrendingUp className="h-6 w-6" />,
-      title: "Career Planning",
-      description: "Create a strategic roadmap for your career growth with actionable steps, milestones, and timeline tracking powered by AI insights."
+      title: 'Career Planning',
+      description:
+        'Create a strategic roadmap for your career growth with actionable steps, milestones, and timeline tracking.',
     },
     {
       icon: <MessageCircle className="h-6 w-6" />,
-      title: "AI Counseling",
-      description: "Get instant, personalized career advice from our advanced AI counselor available 24/7, trained on millions of successful career transitions."
-    }
+      title: 'AI Counseling',
+      description:
+        'Get instant, personalized career advice from an advanced AI counselor available around the clock.',
+    },
   ];
 
   const testimonials = [
     {
-      name: "Sarah Johnson",
-      role: "Software Engineer",
-      content: "The AI counselor helped me transition from marketing to tech. The personalized advice was spot-on!",
-      avatar: "SJ",
-      rating: 5
+      name: 'Sarah Johnson',
+      role: 'Software Engineer',
+      content:
+        'The AI counselor helped me transition from marketing to tech. The personalized advice was spot-on!',
+      avatar: 'SJ',
+      rating: 5,
     },
     {
-      name: "Michael Chen",
-      role: "Product Manager",
-      content: "I was stuck in my career for years. This platform gave me the clarity and direction I needed.",
-      avatar: "MC",
-      rating: 5
+      name: 'Michael Chen',
+      role: 'Product Manager',
+      content:
+        'I was stuck in my career for years. This platform gave me the clarity and direction I needed.',
+      avatar: 'MC',
+      rating: 5,
     },
     {
-      name: "Emily Rodriguez",
-      role: "UX Designer",
-      content: "The skill assessment was incredibly accurate. It helped me identify my true passion and pivot successfully.",
-      avatar: "ER",
-      rating: 5
-    }
+      name: 'Emily Rodriguez',
+      role: 'UX Designer',
+      content:
+        'The skill assessment was incredibly accurate. It helped me identify my true passion and pivot successfully.',
+      avatar: 'ER',
+      rating: 5,
+    },
   ];
 
   const features = [
-    "AI-powered career assessments",
-    "Personalized skill recommendations",
-    "Industry trend analysis",
-    "Resume optimization tips",
-    "Interview preparation",
-    "Salary negotiation guidance"
+    'AI-powered career assessments',
+    'Personalized skill recommendations',
+    'Industry trend analysis',
+    'Resume optimization tips',
+    'Interview preparation',
+    'Salary negotiation guidance',
   ];
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Navigation - Only show when not logged in */}
+      {/* Navigation */}
       {!session && (
-        <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <div className="flex items-center space-x-3">
-              <div className="hidden sm:block">
-                <span className="font-display text-xl sm:text-2xl text-foreground tracking-tight">CareerPath AI</span>
-              </div>
-              <div className="sm:hidden">
-                <span className="font-display text-lg text-foreground tracking-tight">CareerPath AI</span>
-              </div>
-            </div>
+        <nav className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
+          <div className="mx-auto max-w-6xl px-6 lg:px-8">
+            <div className="flex h-16 items-center justify-between">
+              {/* Logo */}
+              <Link href="/" className="flex items-center gap-3">
+                <BrandMark />
+                <span className="font-display text-xl tracking-tight text-foreground">
+                  CareerPath AI
+                </span>
+              </Link>
 
-            {/* Desktop Navigation Links - Only show when not logged in */}
-            {!session && (
-              <div className="hidden md:flex items-center space-x-6">
-                <a href="#services" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Services
-                </a>
-                <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Features
-                </a>
-                <a href="#testimonials" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  Success Stories
-                </a>
-          </div>
-            )}
+              {/* Desktop Navigation Links */}
+              <div className="hidden items-center gap-8 md:flex">
+                {navLinks.map((link) => (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {link.label}
+                  </a>
+                ))}
+              </div>
 
-            {/* Right Side Actions */}
-            <div className="flex items-center gap-3">
-            <AuthButton />
-              {/* Mobile Menu Button - Only show when not logged in */}
-              {!session && (
+              {/* Right Side Actions */}
+              <div className="flex items-center gap-3">
+                <AuthButton />
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="md:hidden p-2 text-foreground hover:text-primary"
+                  className="p-2 text-foreground hover:text-primary md:hidden"
                   onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 >
                   {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
                 </Button>
-              )}
-            </div>
-          </div>
-
-          {/* Mobile Navigation Menu - Only show when not logged in */}
-          {!session && isMobileMenuOpen && (
-            <div className="md:hidden border-t border-border bg-background">
-              <div className="px-4 py-3 space-y-1">
-                <a 
-                  href="#services" 
-                  className="block px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Services
-                </a>
-                <a 
-                  href="#features" 
-                  className="block px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Features
-                </a>
-                <a 
-                  href="#testimonials" 
-                  className="block px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Success Stories
-                </a>
               </div>
             </div>
-          )}
-        </div>
-      </nav>
+
+            {/* Mobile Navigation Menu */}
+            {isMobileMenuOpen && (
+              <div className="border-t border-border py-3 md:hidden">
+                {navLinks.map((link) => (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    className="block px-2 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    {link.label}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        </nav>
       )}
-      
+
       {status === 'loading' ? (
-        <div className="flex items-center justify-center h-96">
+        <div className="flex h-96 items-center justify-center">
           <div className="text-center">
-            <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
             <p className="text-muted-foreground">Loading...</p>
           </div>
         </div>
       ) : session ? (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <section className="py-24 text-center">
-            <div className="max-w-2xl mx-auto">
-              <h2 className="font-display text-4xl sm:text-5xl text-foreground mb-4 tracking-tight">Welcome back</h2>
-              <p className="text-lg text-muted-foreground mb-8">Continue your conversations and get guidance tailored to you.</p>
+        /* Logged-in welcome */
+        <div className="mx-auto max-w-6xl px-6 lg:px-8">
+          <section className="py-24 text-center md:py-32">
+            <div className="mx-auto max-w-2xl">
+              <BrandMark className="mx-auto mb-6 h-10 w-10" />
+              <h1 className="font-display mb-4 text-4xl tracking-tight text-foreground sm:text-5xl">
+                Welcome back{session.user?.name ? `, ${session.user.name.split(' ')[0]}` : ''}
+              </h1>
+              <p className="mb-8 text-lg text-muted-foreground">
+                Continue your conversations and get guidance tailored to you.
+              </p>
               <Link href="/chat">
-                <Button size="lg" className="text-base px-8 py-6 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity">
+                <Button size="lg" className="gap-2 text-base">
                   Go to Chat
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                  <ArrowRight className="h-5 w-5" />
                 </Button>
               </Link>
             </div>
           </section>
         </div>
       ) : (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Hero Section */}
-          <section className="py-20 md:py-32 text-center">
-            <div className="max-w-4xl mx-auto">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
-                <Sparkles className="w-4 h-4" />
-                AI-POWERED CAREER GUIDANCE
+        <div className="mx-auto max-w-6xl px-6 lg:px-8">
+          {/* Hero */}
+          <section className="py-20 text-center md:py-28">
+            <div className="mx-auto max-w-4xl">
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary">
+                <Compass className="h-4 w-4" />
+                AI-Powered Career Guidance
               </div>
-              <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-foreground mb-6 tracking-tight leading-[1.1]">
-                Transform Your
-                <span className="text-primary block mt-2">Career Journey</span>
+              <h1 className="font-display mb-6 text-4xl leading-[1.1] tracking-tight text-foreground sm:text-5xl md:text-6xl">
+                Navigate Your Career
+                <span className="block text-primary">with Confidence</span>
               </h1>
-              <p className="text-base md:text-lg text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
-                Get personalized career counseling, skill assessments, and strategic guidance from our advanced AI counselor. 
-                Discover your potential and unlock new opportunities.
+              <p className="mx-auto mb-8 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
+                Personalized career counseling, skill assessments, and strategic guidance from an
+                advanced AI counselor. Discover your potential and unlock new opportunities.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/auth/signin">  
-                <Button size="lg" className="text-base px-8 py-6 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity">
-                  Start Your Journey
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
+              <div className="flex flex-col justify-center gap-4 sm:flex-row">
+                <Link href="/auth/signup">
+                  <Button size="lg" className="w-full gap-2 text-base sm:w-auto">
+                    Start Your Journey
+                    <ArrowRight className="h-5 w-5" />
+                  </Button>
                 </Link>
                 <Link href="#services">
-                <Button variant="outline" size="lg" className="text-base px-8 py-6 rounded-lg">
-                  Learn More
-                </Button>
+                  <Button variant="outline" size="lg" className="w-full text-base sm:w-auto">
+                    Learn More
+                  </Button>
                 </Link>
               </div>
             </div>
           </section>
 
-          {/* Features Section */}
-          <section id="services" className="py-20">
-            <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
-                <Target className="w-4 h-4" />
-                WHY CHOOSE CAREERPATH AI?
+          {/* Services */}
+          <section id="services" className="py-20 md:py-24">
+            <div className="mb-12 text-center md:mb-16">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary">
+                <Target className="h-4 w-4" />
+                Why CareerPath AI
               </div>
-              <h2 className="font-display text-3xl md:text-4xl text-foreground mb-4 tracking-tight">
+              <h2 className="font-display mb-4 text-3xl tracking-tight text-foreground md:text-4xl">
                 Comprehensive Career Guidance
               </h2>
-              <p className="text-base text-muted-foreground max-w-2xl mx-auto">
-                Our comprehensive platform combines cutting-edge AI technology with proven career counseling methodologies.
+              <p className="mx-auto max-w-2xl text-base text-muted-foreground">
+                A platform that combines modern AI technology with proven career counseling
+                methodologies.
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
               {services.map((service, index) => (
-                <Card key={index} className="text-center bg-card border border-border rounded-xl p-6 hover:border-primary/50 hover:shadow-lg transition-all duration-200">
-                  <div className="mx-auto w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary mb-4">
+                <Card
+                  key={index}
+                  className="rounded-xl border border-border bg-card p-6 transition-all duration-200 hover:border-primary/40 hover:shadow-md"
+                >
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
                     {service.icon}
                   </div>
-                  <CardTitle className="text-lg text-foreground mb-2">{service.title}</CardTitle>
-                  <CardContent className="p-0">
-                    <CardDescription className="text-sm text-muted-foreground leading-relaxed">
-                      {service.description}
-                    </CardDescription>
-                  </CardContent>
+                  <h3 className="font-display mb-2 text-lg text-foreground">{service.title}</h3>
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    {service.description}
+                  </p>
                 </Card>
               ))}
             </div>
           </section>
 
-          {/* How It Works Section */}
-          <section className="py-20">
-            <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
-                <TrendingUp className="w-4 h-4" />
-                HOW IT WORKS
+          {/* How It Works */}
+          <section className="border-y border-border bg-muted/30 py-20 md:py-24">
+            <div className="mb-12 text-center md:mb-16">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary">
+                <TrendingUp className="h-4 w-4" />
+                How It Works
               </div>
-              <h2 className="font-display text-3xl md:text-4xl text-foreground mb-4 tracking-tight">
+              <h2 className="font-display mb-4 text-3xl tracking-tight text-foreground md:text-4xl">
                 Simple Steps to Success
               </h2>
-              <p className="text-base text-muted-foreground max-w-2xl mx-auto">
-                Get started in minutes and transform your career with our AI-powered guidance.
+              <p className="mx-auto max-w-2xl text-base text-muted-foreground">
+                Get started in minutes and transform your career with AI-powered guidance.
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="bg-card border border-border rounded-xl p-6 relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 to-primary" />
-                <div className="text-primary text-sm font-medium mb-2">STEP 1</div>
-                <h3 className="font-display text-xl text-foreground mb-2">Sign Up</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Create your free account in seconds. No credit card required to get started.
-                </p>
-              </Card>
-              <Card className="bg-card border border-border rounded-xl p-6 relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 to-primary" />
-                <div className="text-primary text-sm font-medium mb-2">STEP 2</div>
-                <h3 className="font-display text-xl text-foreground mb-2">Chat with AI</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Tell our AI counselor about your skills, goals, and career aspirations.
-                </p>
-              </Card>
-              <Card className="bg-card border border-border rounded-xl p-6 relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/50 to-primary" />
-                <div className="text-primary text-sm font-medium mb-2">STEP 3</div>
-                <h3 className="font-display text-xl text-foreground mb-2">Get Your Plan</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Receive personalized career roadmap with actionable steps and resources.
-                </p>
-              </Card>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+              {[
+                {
+                  step: 'Step 1',
+                  title: 'Create Your Account',
+                  description:
+                    'Sign up for free in seconds. No credit card required to get started.',
+                },
+                {
+                  step: 'Step 2',
+                  title: 'Chat with the AI Counselor',
+                  description:
+                    'Tell the AI counselor about your skills, goals, and career aspirations.',
+                },
+                {
+                  step: 'Step 3',
+                  title: 'Receive Your Plan',
+                  description:
+                    'Get a personalized career roadmap with actionable steps and resources.',
+                },
+              ].map((item, index) => (
+                <Card key={index} className="relative overflow-hidden rounded-xl border border-border bg-card p-6">
+                  <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary/60 to-primary" />
+                  <div className="label-mono mb-3 text-primary">{item.step}</div>
+                  <h3 className="font-display mb-2 text-xl text-foreground">{item.title}</h3>
+                  <p className="text-sm leading-relaxed text-muted-foreground">{item.description}</p>
+                </Card>
+              ))}
             </div>
           </section>
 
-          {/* Stats Section */}
-          <section className="py-20 bg-primary/5 rounded-2xl px-6 md:px-10">
-            <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
-                <Star className="w-4 h-4" />
-                TRUSTED BY THOUSANDS
+          {/* Stats */}
+          <section className="py-20 md:py-24">
+            <div className="mb-12 text-center md:mb-16">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary">
+                <Star className="h-4 w-4" />
+                Trusted by Thousands
               </div>
-              <h2 className="font-display text-3xl md:text-4xl text-foreground mb-4 tracking-tight">
+              <h2 className="font-display mb-4 text-3xl tracking-tight text-foreground md:text-4xl">
                 Join the Community
               </h2>
               <p className="text-base text-muted-foreground">
-                Join the growing community of professionals who&apos;ve transformed their careers
+                Join professionals who&apos;ve transformed their careers with structured guidance.
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-              <div>
-                <div className="font-display text-4xl md:text-5xl text-foreground mb-2 tracking-tight">10,000+</div>
-                <div className="text-sm text-muted-foreground font-medium">Successful Career Transitions</div>
-              </div>
-              <div>
-                <div className="font-display text-4xl md:text-5xl text-foreground mb-2 tracking-tight">95%</div>
-                <div className="text-sm text-muted-foreground font-medium">User Satisfaction Rate</div>
-              </div>
-              <div>
-                <div className="font-display text-4xl md:text-5xl text-foreground mb-2 tracking-tight">24/7</div>
-                <div className="text-sm text-muted-foreground font-medium">AI Counselor Availability</div>
-              </div>
+            <div className="grid grid-cols-1 gap-6 text-center md:grid-cols-3">
+              {[
+                { value: '10,000+', label: 'Successful Career Transitions' },
+                { value: '95%', label: 'User Satisfaction Rate' },
+                { value: '24/7', label: 'AI Counselor Availability' },
+              ].map((stat, index) => (
+                <div key={index} className="rounded-xl border border-border bg-card p-8">
+                  <div className="font-display mb-2 text-4xl tracking-tight text-primary md:text-5xl">
+                    {stat.value}
+                  </div>
+                  <div className="text-sm font-medium text-muted-foreground">{stat.label}</div>
+                </div>
+              ))}
             </div>
           </section>
 
-          {/* Features List */}
-          <section id="features" className="py-20">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          {/* Features */}
+          <section id="features" className="border-y border-border bg-muted/30 py-20 md:py-24">
+            <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
               <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
-                  <CheckCircle className="w-4 h-4" />
-                  FEATURES
+                <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary">
+                  <CheckCircle className="h-4 w-4" />
+                  Features
                 </div>
-                <h2 className="font-display text-3xl md:text-4xl text-foreground mb-4 tracking-tight">
+                <h2 className="font-display mb-4 text-3xl tracking-tight text-foreground md:text-4xl">
                   Everything You Need for Career Success
                 </h2>
-                <p className="text-base text-muted-foreground mb-8 leading-relaxed">
-                  Our comprehensive platform provides all the tools and guidance you need to advance your career, 
-                  whether you&apos;re just starting out or looking to make a major transition.
+                <p className="mb-8 text-base leading-relaxed text-muted-foreground">
+                  All the tools and guidance you need to advance your career &mdash; whether
+                  you&apos;re just starting out or planning a major transition.
                 </p>
-                <div className="space-y-4">
+                <ul className="space-y-4">
                   {features.map((feature, index) => (
-                    <div key={index} className="flex items-center space-x-3">
-                      <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <CheckCircle className="h-3 w-3 text-primary" />
-                      </div>
+                    <li key={index} className="flex items-center gap-3">
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                        <CheckCircle className="h-3.5 w-3.5 text-primary" />
+                      </span>
                       <span className="text-base text-foreground">{feature}</span>
-                    </div>
+                    </li>
                   ))}
-                </div>
+                </ul>
               </div>
-              <div className="relative">
-                <Card className="p-6 bg-card border border-border rounded-xl shadow-lg">
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-3">
-                      <Avatar className="w-10 h-10">
-                        <AvatarFallback className="bg-primary text-primary-foreground font-semibold text-sm">AI</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-semibold text-foreground text-sm">CareerPath AI</div>
-                        <div className="text-xs text-muted-foreground">YOUR PERSONAL CAREER COUNSELOR</div>
-                      </div>
-                    </div>
-                    <div className="bg-muted/50 p-4 rounded-lg border border-border">
-                      <p className="text-sm text-foreground leading-relaxed">
-                        &ldquo;Based on your skills and interests, I recommend exploring roles in Product Management. 
-                        You have strong analytical thinking and communication skills that would be perfect for this field.&rdquo;
-                      </p>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <Avatar className="w-10 h-10">
-                        <AvatarFallback className="bg-secondary text-secondary-foreground font-semibold text-sm">U</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-semibold text-foreground text-sm">You</div>
-                        <div className="text-xs text-muted-foreground">CAREER SEEKER</div>
-                      </div>
-                    </div>
-                    <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
-                      <p className="text-sm text-foreground leading-relaxed">
-                        &ldquo;That sounds interesting! What skills should I focus on developing?&rdquo;
-                      </p>
+              <Card className="rounded-xl border border-border bg-card p-6 shadow-sm">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-10 w-10">
+                      <AvatarFallback className="bg-primary text-sm font-semibold text-primary-foreground">
+                        AI
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <div className="text-sm font-semibold text-foreground">CareerPath AI</div>
+                      <div className="label-mono-sm text-muted-foreground">Your Career Counselor</div>
                     </div>
                   </div>
-                </Card>
-              </div>
+                  <div className="rounded-lg border border-border bg-background p-4">
+                    <p className="text-sm leading-relaxed text-foreground">
+                      &ldquo;Based on your skills and interests, I recommend exploring roles in
+                      product management. Your analytical thinking and communication skills would
+                      transfer well to this field.&rdquo;
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-10 w-10">
+                      <AvatarFallback className="bg-secondary text-sm font-semibold text-secondary-foreground">
+                        U
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <div className="text-sm font-semibold text-foreground">You</div>
+                      <div className="label-mono-sm text-muted-foreground">Career Seeker</div>
+                    </div>
+                  </div>
+                  <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
+                    <p className="text-sm leading-relaxed text-foreground">
+                      &ldquo;That sounds interesting! What skills should I focus on developing
+                      first?&rdquo;
+                    </p>
+                  </div>
+                </div>
+              </Card>
             </div>
           </section>
 
           {/* Testimonials */}
-          <section id="testimonials" className="py-20">
-            <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
-                <Star className="w-4 h-4" />
-                SUCCESS STORIES
+          <section id="testimonials" className="py-20 md:py-24">
+            <div className="mb-12 text-center md:mb-16">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm font-medium text-primary">
+                <Star className="h-4 w-4" />
+                Success Stories
               </div>
-              <h2 className="font-display text-3xl md:text-4xl text-foreground mb-4 tracking-tight">
+              <h2 className="font-display mb-4 text-3xl tracking-tight text-foreground md:text-4xl">
                 Transform Your Career
               </h2>
               <p className="text-base text-muted-foreground">
-                Hear from professionals who&apos;ve transformed their careers with our guidance
+                Hear from professionals who&apos;ve transformed their careers with our guidance.
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
               {testimonials.map((testimonial, index) => (
-                <Card key={index} className="p-6 bg-card border border-border rounded-xl hover:shadow-lg transition-shadow duration-200">
-                  <CardContent className="p-0">
-                    <div className="flex items-center space-x-1 mb-4">
+                <Card
+                  key={index}
+                  className="rounded-xl border border-border bg-card p-6 transition-shadow duration-200 hover:shadow-md"
+                >
+                  <CardContent className="space-y-4 p-0">
+                    <div className="flex items-center gap-1">
                       {[...Array(testimonial.rating)].map((_, i) => (
                         <Star key={i} className="h-4 w-4 fill-primary text-primary" />
                       ))}
                     </div>
-                    <p className="text-sm text-muted-foreground mb-6 italic leading-relaxed">
+                    <p className="text-sm italic leading-relaxed text-muted-foreground">
                       &ldquo;{testimonial.content}&rdquo;
                     </p>
-                    <div className="flex items-center space-x-3">
-                      <Avatar className="w-10 h-10">
-                        <AvatarFallback className="bg-secondary text-secondary-foreground font-semibold text-sm">{testimonial.avatar}</AvatarFallback>
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-10 w-10">
+                        <AvatarFallback className="bg-secondary text-sm font-semibold text-secondary-foreground">
+                          {testimonial.avatar}
+                        </AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="font-semibold text-foreground text-sm">{testimonial.name}</div>
+                        <div className="text-sm font-semibold text-foreground">{testimonial.name}</div>
                         <div className="text-xs text-muted-foreground">{testimonial.role}</div>
                       </div>
                     </div>
@@ -426,51 +452,52 @@ export default function Home() {
             </div>
           </section>
 
-          {/* CTA Section */}
-          <section className="py-20">
-            <Card className="p-8 md:p-12 bg-primary rounded-2xl border-none">
+          {/* CTA */}
+          <section className="pb-20 md:pb-24">
+            <Card className="rounded-2xl border-none bg-primary p-8 md:p-12">
               <CardContent className="p-0 text-center">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-foreground/10 text-primary-foreground text-sm font-medium mb-4">
-                  <ArrowRight className="w-4 h-4" />
-                  GET STARTED
-                </div>
-                <h2 className="font-display text-3xl md:text-4xl text-primary-foreground mb-4 tracking-tight">
+                <h2 className="font-display mb-4 text-3xl tracking-tight text-primary-foreground md:text-4xl">
                   Ready to Transform Your Career?
                 </h2>
-                <p className="text-base text-primary-foreground/80 mb-8 max-w-2xl mx-auto leading-relaxed">
-                  Join thousands of professionals who&apos;ve already discovered their ideal career path. 
-                  Start your journey today with our AI-powered career counseling.
+                <p className="mx-auto mb-8 max-w-2xl text-base leading-relaxed text-primary-foreground/80">
+                  Join thousands of professionals who&apos;ve already discovered their ideal career
+                  path. Start your journey today.
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Link href="/auth/signin">  
-                  <Button size="lg" className="text-base px-8 py-6 bg-primary-foreground text-primary rounded-lg hover:opacity-90 transition-opacity">
+                <Link href="/auth/signup">
+                  <Button
+                    size="lg"
+                    className="gap-2 bg-primary-foreground text-base text-primary hover:bg-primary-foreground/90"
+                  >
                     Get Started Now
-                    <ArrowRight className="ml-2 h-5 w-5" />
+                    <ArrowRight className="h-5 w-5" />
                   </Button>
-                  </Link>
-                </div>
+                </Link>
               </CardContent>
             </Card>
           </section>
 
           {/* Footer */}
-          <footer className="py-12 border-t border-border">
-          <div className="text-center">
-              <div className="flex items-center justify-center space-x-2 mb-4">
-                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                  <Heart className="h-4 w-4 text-primary-foreground" />
-                </div>
+          <footer className="border-t border-border py-12">
+            <div className="text-center">
+              <div className="mb-4 flex items-center justify-center gap-3">
+                <BrandMark />
                 <span className="font-display text-lg text-foreground">CareerPath AI</span>
               </div>
-              <p className="text-sm text-muted-foreground mb-4">
+              <p className="mb-6 text-sm text-muted-foreground">
                 Empowering careers with AI-driven insights and personalized guidance.
               </p>
-              <div className="flex justify-center space-x-6 text-sm text-muted-foreground">
-                <a href="#" className="hover:text-foreground transition-colors">Privacy Policy</a>
-                <a href="#" className="hover:text-foreground transition-colors">Terms of Service</a>
-                <a href="#" className="hover:text-foreground transition-colors">Contact</a>
+              <div className="flex justify-center gap-8 text-sm text-muted-foreground">
+                <a href="#" className="transition-colors hover:text-foreground">
+                  Privacy Policy
+                </a>
+                <a href="#" className="transition-colors hover:text-foreground">
+                  Terms of Service
+                </a>
+                <a href="#" className="transition-colors hover:text-foreground">
+                  Contact
+                </a>
               </div>
-          </div>
+            </div>
           </footer>
         </div>
       )}
